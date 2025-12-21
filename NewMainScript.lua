@@ -669,4 +669,11 @@ local function pload(fileName, isImportant, required)
 end
 shared.pload = pload
 getgenv().pload = pload
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "PSWalloz tuff-v4",
+    Text = "Hello from tuff-v4 #1",
+    Duration = 5
+})
+
 return pload("MainScript.lua", true)
