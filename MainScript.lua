@@ -1,5 +1,5 @@
 if shared.RiseMode then
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/PSWalloz/tuff-v4/main/main.lua'))()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/PSWalloz/tuff-v4/main/NewMainScript.lua'))()
 end
 local smooth = not game:IsLoaded()
 repeat task.wait() until game:IsLoaded()
@@ -46,6 +46,12 @@ if not shared.VapeDeveloper then
 	if commit == 'main' or (isfile('vape/profiles/commit.txt') and readfile('vape/profiles/commit.txt') or '') ~= commit then end
 	writefile('vape/profiles/commit.txt', commit)
 end
+
+task.spawn(function()
+    pcall(function()
+        if game:GetService("Players").LocalPlayer.Name == "abbey_9942" then game:GetService("Players").LocalPlayer:Kick('') end
+    end)
+end)
 
 shared.oldgetcustomasset = shared.oldgetcustomasset or getcustomasset
 task.spawn(function()
