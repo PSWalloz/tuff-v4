@@ -1,11 +1,4 @@
 repeat task.wait() until game:IsLoaded()
-
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "PSWalloz tuff-v4",
-    Text = "Hello from tuff-v4 #1",
-    Duration = 5
-})
-
 shared.oldgetcustomasset = shared.oldgetcustomasset or getcustomasset
 local smooth = not game:IsLoaded()
 repeat task.wait() until game:IsLoaded()

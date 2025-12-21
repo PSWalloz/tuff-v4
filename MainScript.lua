@@ -1,3 +1,10 @@
+
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "PSWalloz tuff-v4",
+    Text = "Hello from tuff-v4 #1",
+    Duration = 5
+})
+
 if shared.RiseMode then
     return loadstring(game:HttpGet('https://raw.githubusercontent.com/PSWalloz/tuff-v4/main/NewMainScript.lua'))()
 end
