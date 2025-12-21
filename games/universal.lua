@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 local loadstring = function(...)
 	local res, err = loadstring(...)
 	if err and vape then
@@ -14,7 +15,7 @@ end
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/'..select(1, path:gsub('vape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -26,18 +27,12 @@ local function downloadFile(path, func)
 	end
 	return (func or readfile)(path)
 end
+local run = function(func)
+	func()
+end
 local queue_on_teleport = queue_on_teleport or function() end
 local cloneref = cloneref or function(obj)
 	return obj
-end
-
-local function run(func)
-	task.spawn(function()
-		local suc, err = pcall(function()
-			return func()
-		end)
-		if (not suc) then errorNotification("universal.lua error", debug.traceback(tostring(err)), 10) end
-	end)
 end
 
 local playersService = cloneref(game:GetService('Players'))
@@ -55,7 +50,10 @@ local textChatService = cloneref(game:GetService('TextChatService'))
 local contextService = cloneref(game:GetService('ContextActionService'))
 local coreGui = cloneref(game:GetService('CoreGui'))
 
-local gameCamera = game.Workspace.CurrentCamera or game.Workspace:FindFirstChildWhichIsA('Camera')
+local isnetworkowner = identifyexecutor and table.find({'AWP', 'Nihon'}, ({identifyexecutor()})[1]) and isnetworkowner or function()
+	return true
+end
+local gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA('Camera')
 local lplr = playersService.LocalPlayer
 local assetfunction = getcustomasset
 
@@ -63,75 +61,7 @@ local vape = shared.vape
 local tween = vape.Libraries.tween
 local targetinfo = vape.Libraries.targetinfo
 local getfontsize = vape.Libraries.getfontsize
-
-local getcustomassets = {
-	['vape/assets/new/add.png'] = 'rbxassetid://14368300605',
-	['vape/assets/new/alert.png'] = 'rbxassetid://14368301329',
-	['vape/assets/new/allowedicon.png'] = 'rbxassetid://14368302000',
-	['vape/assets/new/allowedtab.png'] = 'rbxassetid://14368302875',
-	['vape/assets/new/arrowmodule.png'] = 'rbxassetid://14473354880',
-	['vape/assets/new/back.png'] = 'rbxassetid://14368303894',
-	['vape/assets/new/bind.png'] = 'rbxassetid://14368304734',
-	['vape/assets/new/bindbkg.png'] = 'rbxassetid://14368305655',
-	['vape/assets/new/blatanticon.png'] = 'rbxassetid://14368306745',
-	['vape/assets/new/blockedicon.png'] = 'rbxassetid://14385669108',
-	['vape/assets/new/blockedtab.png'] = 'rbxassetid://14385672881',
-	['vape/assets/new/blur.png'] = 'rbxassetid://14898786664',
-	['vape/assets/new/blurnotif.png'] = 'rbxassetid://16738720137',
-	['vape/assets/new/close.png'] = 'rbxassetid://14368309446',
-	['vape/assets/new/closemini.png'] = 'rbxassetid://14368310467',
-	['vape/assets/new/colorpreview.png'] = 'rbxassetid://14368311578',
-	['vape/assets/new/combaticon.png'] = 'rbxassetid://14368312652',
-	['vape/assets/new/customsettings.png'] = 'rbxassetid://14403726449',
-	['vape/assets/new/dots.png'] = 'rbxassetid://14368314459',
-	['vape/assets/new/edit.png'] = 'rbxassetid://14368315443',
-	['vape/assets/new/expandright.png'] = 'rbxassetid://14368316544',
-	['vape/assets/new/expandup.png'] = 'rbxassetid://14368317595',
-	['vape/assets/new/friendstab.png'] = 'rbxassetid://14397462778',
-	['vape/assets/new/guisettings.png'] = 'rbxassetid://14368318994',
-	['vape/assets/new/guislider.png'] = 'rbxassetid://14368320020',
-	['vape/assets/new/guisliderrain.png'] = 'rbxassetid://14368321228',
-	['vape/assets/new/guiv4.png'] = 'rbxassetid://14368322199',
-	['vape/assets/new/guivape.png'] = 'rbxassetid://14657521312',
-	['vape/assets/new/info.png'] = 'rbxassetid://14368324807',
-	['vape/assets/new/inventoryicon.png'] = 'rbxassetid://14928011633',
-	['vape/assets/new/legit.png'] = 'rbxassetid://14425650534',
-	['vape/assets/new/legittab.png'] = 'rbxassetid://14426740825',
-	['vape/assets/new/miniicon.png'] = 'rbxassetid://14368326029',
-	['vape/assets/new/notification.png'] = 'rbxassetid://16738721069',
-	['vape/assets/new/overlaysicon.png'] = 'rbxassetid://14368339581',
-	['vape/assets/new/overlaystab.png'] = 'rbxassetid://14397380433',
-	['vape/assets/new/pin.png'] = 'rbxassetid://14368342301',
-	['vape/assets/new/profilesicon.png'] = 'rbxassetid://14397465323',
-	['vape/assets/new/radaricon.png'] = 'rbxassetid://14368343291',
-	['vape/assets/new/rainbow_1.png'] = 'rbxassetid://14368344374',
-	['vape/assets/new/rainbow_2.png'] = 'rbxassetid://14368345149',
-	['vape/assets/new/rainbow_3.png'] = 'rbxassetid://14368345840',
-	['vape/assets/new/rainbow_4.png'] = 'rbxassetid://14368346696',
-	['vape/assets/new/range.png'] = 'rbxassetid://14368347435',
-	['vape/assets/new/rangearrow.png'] = 'rbxassetid://14368348640',
-	['vape/assets/new/rendericon.png'] = 'rbxassetid://14368350193',
-	['vape/assets/new/rendertab.png'] = 'rbxassetid://14397373458',
-	['vape/assets/new/search.png'] = 'rbxassetid://14425646684',
-	['vape/assets/new/expandicon.png'] = 'rbxassetid://14368353032',
-	['vape/assets/new/targetinfoicon.png'] = 'rbxassetid://14368354234',
-	['vape/assets/new/targetnpc1.png'] = 'rbxassetid://14497400332',
-	['vape/assets/new/targetnpc2.png'] = 'rbxassetid://14497402744',
-	['vape/assets/new/targetplayers1.png'] = 'rbxassetid://14497396015',
-	['vape/assets/new/targetplayers2.png'] = 'rbxassetid://14497397862',
-	['vape/assets/new/targetstab.png'] = 'rbxassetid://14497393895',
-	['vape/assets/new/textguiicon.png'] = 'rbxassetid://14368355456',
-	['vape/assets/new/textv4.png'] = 'rbxassetid://14368357095',
-	['vape/assets/new/textvape.png'] = 'rbxassetid://14368358200',
-	['vape/assets/new/utilityicon.png'] = 'rbxassetid://14368359107',
-	['vape/assets/new/vape.png'] = 'rbxassetid://14373395239',
-	['vape/assets/new/warning.png'] = 'rbxassetid://14368361552',
-	['vape/assets/new/worldicon.png'] = 'rbxassetid://14368362492'
-}
-
-local getcustomasset = function(path)
-	return getcustomassets[path] or ''
-end
+local getcustomasset = vape.Libraries.getcustomasset
 
 local TargetStrafeVector, SpiderShift, WaypointFolder
 local Spider = {Enabled = false}
@@ -143,7 +73,7 @@ local function addBlur(parent)
 	blur.Size = UDim2.new(1, 89, 1, 52)
 	blur.Position = UDim2.fromOffset(-48, -31)
 	blur.BackgroundTransparency = 1
-	blur.Image = getcustomasset('vape/assets/new/blur.png')
+	blur.Image = getcustomasset('newvape/assets/new/blur.png')
 	blur.ScaleType = Enum.ScaleType.Slice
 	blur.SliceCenter = Rect.new(52, 31, 261, 502)
 	blur.Parent = parent
@@ -235,7 +165,7 @@ local function serverHop(pointer, filter)
 			if tonumber(v.playing) < playersService.MaxPlayers and not table.find(visited, v.id) and not table.find(attempted, v.id) then
 				cacheExpire, cache = tick() + 60, httpdata
 				table.insert(attempted, v.id)
-				
+
 				notif('Vape', 'Found! Teleporting.', 5)
 				teleportService:TeleportToPlaceInstance(game.PlaceId, v.id)
 				return
@@ -278,15 +208,21 @@ local function updateVelocity()
 	end
 end
 
-local hash = loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWRewrite/main/libraries/hash.lua", true))()
---pload('libraries/hash.lua', true, true)
---loadstring(downloadFile('vape/libraries/hash.lua'), 'hash')()
-local prediction = loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWRewrite/main/libraries/prediction.lua", true))()
---pload('libraries/prediction.lua', true, true)
---loadstring(downloadFile('vape/libraries/prediction.lua'), 'prediction')()
-entitylib = loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWRewrite/main/libraries/entity.lua", true))()
---pload('libraries/entity.lua', true, true)
---loadstring(downloadFile('vape/libraries/entity.lua'), 'entitylibrary')()
+local function motorMove(target, cf)
+	local part = Instance.new('Part')
+	part.Anchored = true
+	part.Parent = workspace
+	local motor = Instance.new('Motor6D')
+	motor.Part0 = target
+	motor.Part1 = part
+	motor.C1 = cf
+	motor.Parent = part
+	task.delay(0, part.Destroy, part)
+end
+
+local hash = loadstring(downloadFile('newvape/libraries/hash.lua'), 'hash')()
+local prediction = loadstring(downloadFile('newvape/libraries/prediction.lua'), 'prediction')()
+entitylib = loadstring(downloadFile('newvape/libraries/entity.lua'), 'entitylibrary')()
 local whitelist = {
 	alreadychecked = {},
 	customtags = {},
@@ -345,13 +281,20 @@ SpeedMethods = {
 		local root = entitylib.character.RootPart
 		root.AssemblyLinearVelocity = (moveDirection * options.Value.Value) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
 	end,
+	Impulse = function(options, moveDirection)
+		local root = entitylib.character.RootPart
+		local diff = ((moveDirection * options.Value.Value) - root.AssemblyLinearVelocity) * Vector3.new(1, 0, 1)
+		if diff.Magnitude > (moveDirection == Vector3.zero and 10 or 2) then
+			root:ApplyImpulse(diff * root.AssemblyMass)
+		end
+	end,
 	CFrame = function(options, moveDirection, dt)
 		local root = entitylib.character.RootPart
 		local dest = (moveDirection * math.max(options.Value.Value - entitylib.character.Humanoid.WalkSpeed, 0) * dt)
 		if options.WallCheck.Enabled then
 			options.rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
 			options.rayCheck.CollisionGroup = root.CollisionGroup
-			local ray = game.Workspace:Raycast(root.Position, dest, options.rayCheck)
+			local ray = workspace:Raycast(root.Position, dest, options.rayCheck)
 			if ray then
 				dest = ((ray.Position + ray.Normal) - root.Position)
 			end
@@ -416,7 +359,6 @@ run(function()
 	end
 
 	entitylib.getEntityColor = function(ent)
-		if not ent.Player then return end
 		ent = ent.Player
 		if not (ent and vape.Categories.Main.Options['Use team color'].Enabled) then return end
 		if isFriend(ent, true) then
@@ -432,181 +374,10 @@ run(function()
 	vape:Clean(vape.Categories.Friends.Update.Event:Connect(function() entitylib.refresh() end))
 	vape:Clean(vape.Categories.Targets.Update.Event:Connect(function() entitylib.refresh() end))
 	vape:Clean(entitylib.Events.LocalAdded:Connect(updateVelocity))
-	vape:Clean(game.Workspace:GetPropertyChangedSignal('CurrentCamera'):Connect(function()
-		gameCamera = game.Workspace.CurrentCamera or game.Workspace:FindFirstChildWhichIsA('Camera')
+	vape:Clean(workspace:GetPropertyChangedSignal('CurrentCamera'):Connect(function()
+		gameCamera = workspace.CurrentCamera or workspace:FindFirstChildWhichIsA('Camera')
 	end))
 end)
-
-local commands = {
-	byfron = function()
-		task.spawn(function()
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-			local UIBlox = getrenv().require(game:GetService('CorePackages').UIBlox)
-			local Roact = getrenv().require(game:GetService('CorePackages').Roact)
-			UIBlox.init(getrenv().require(game:GetService('CorePackages').Workspace.Packages.RobloxAppUIBloxConfig))
-			local auth = getrenv().require(coreGui.RobloxGui.Modules.LuaApp.Components.Moderation.ModerationPrompt)
-			local darktheme = getrenv().require(game:GetService('CorePackages').Workspace.Packages.Style).Themes.DarkTheme
-			local fonttokens = getrenv().require(game:GetService("CorePackages").Packages._Index.UIBlox.UIBlox.App.Style.Tokens).getTokens('Desktop', 'Dark', true)
-			local buildersans = getrenv().require(game:GetService('CorePackages').Packages._Index.UIBlox.UIBlox.App.Style.Fonts.FontLoader).new(true, fonttokens):loadFont()
-			local tLocalization = getrenv().require(game:GetService('CorePackages').Workspace.Packages.RobloxAppLocales).Localization
-			local localProvider = getrenv().require(game:GetService('CorePackages').Workspace.Packages.Localization).LocalizationProvider
-			lplr.PlayerGui:ClearAllChildren()
-			vape.gui.Enabled = false
-			coreGui:ClearAllChildren()
-			lightingService:ClearAllChildren()
-			for _, v in game.Workspace:GetChildren() do
-				pcall(function()
-					v:Destroy()
-				end)
-			end
-			lplr.kick(lplr)
-			guiService:ClearError()
-			local gui = Instance.new('ScreenGui')
-			gui.IgnoreGuiInset = true
-			gui.Parent = coreGui
-			local frame = Instance.new('ImageLabel')
-			frame.BorderSizePixel = 0
-			frame.Size = UDim2.fromScale(1, 1)
-			frame.BackgroundColor3 = Color3.fromRGB(224, 223, 225)
-			frame.ScaleType = Enum.ScaleType.Crop
-			frame.Parent = gui
-			task.delay(0.3, function()
-				frame.Image = 'rbxasset://textures/ui/LuaApp/graphic/Auth/GridBackground.jpg'
-			end)
-			task.delay(0.6, function()
-				local modPrompt = Roact.createElement(auth, {
-					style = {},
-					screenSize = vape.gui.AbsoluteSize or Vector2.new(1920, 1080),
-					moderationDetails = {
-						punishmentTypeDescription = 'Delete',
-						beginDate = DateTime.fromUnixTimestampMillis(DateTime.now().UnixTimestampMillis - ((60 * math.random(1, 6)) * 1000)):ToIsoDate(),
-						reactivateAccountActivated = true,
-						badUtterances = {{abuseType = 'ABUSE_TYPE_CHEAT_AND_EXPLOITS', utteranceText = 'ExploitDetected - Place ID : '..game.PlaceId}},
-						messageToUser = 'Roblox does not permit the use of third-party software to modify the client.'
-					},
-					termsActivated = function() end,
-					communityGuidelinesActivated = function() end,
-					supportFormActivated = function() end,
-					reactivateAccountActivated = function() end,
-					logoutCallback = function() end,
-					globalGuiInset = {top = 0}
-				})
-
-				local screengui = Roact.createElement(localProvider, {
-					localization = tLocalization.new('en-us')
-				}, {Roact.createElement(UIBlox.Style.Provider, {
-					style = {
-						Theme = darktheme,
-						Font = buildersans
-					},
-				}, {modPrompt})})
-
-				Roact.mount(screengui, coreGui)
-			end)
-		end)
-	end,
-	crash = function()
-		task.spawn(function() 
-			repeat 
-				local part = Instance.new('Part')
-				part.Size = Vector3.new(1e10, 1e10, 1e10)
-				part.Parent = game.Workspace
-			until false 
-		end)
-	end,
-	deletemap = function()
-		local terrain = game.Workspace:FindFirstChildWhichIsA('Terrain')
-		if terrain then
-			terrain:Clear()
-		end
-
-		for _, v in game.Workspace:GetChildren() do
-			if v ~= terrain and not v:IsDescendantOf(lplr.Character) and not v:IsA('Camera') then
-				v:Destroy()
-				v:ClearAllChildren()
-			end
-		end
-	end,
-	framerate = function(args)
-		if #args < 1 or not setfpscap then return end
-		setfpscap(tonumber(args[1]) ~= '' and math.clamp(tonumber(args[1]) or 9999, 1, 9999) or 9999)
-	end,
-	gravity = function(args)
-		game.Workspace.Gravity = tonumber(args[1]) or game.Workspace.Gravity
-	end,
-	jump = function()
-		if entitylib.isAlive and entitylib.character.Humanoid.FloorMaterial ~= Enum.Material.Air then
-			entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-		end
-	end,
-	kick = function(args)
-		task.spawn(function()
-			lplr:Kick(table.concat(args, ' '))
-			if lplr.Character then lplr.Character:Destroy() end
-			lplr:Destroy()
-		end)
-	end,
-	kill = function()
-		if entitylib.isAlive then
-			entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-			entitylib.character.Humanoid.Health = 0
-		end
-	end,
-	--[[reveal = function()
-		task.delay(0.1, function()
-			if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-				textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync('I am using the inhaler client')
-			else
-				replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer('I am using the inhaler client', 'All')
-			end
-		end)
-	end,--]]
-	shutdown = function()
-		game:Shutdown()
-	end,
-	toggle = function(args)
-		if #args < 1 then return end
-		if args[1]:lower() == 'all' then
-			for i, v in vape.Modules do
-				if i ~= 'Panic' and i ~= 'ServerHop' and i ~= 'Rejoin' then
-					v:Toggle()
-				end
-			end
-		else
-			for i, v in vape.Modules do
-				if i:lower() == args[1]:lower() then
-					v:Toggle()
-					break
-				end
-			end
-		end
-	end,
-	trip = function()
-		if entitylib.isAlive then
-			if entitylib.character.RootPart.Velocity.Magnitude < 15 then
-				entitylib.character.RootPart.Velocity = entitylib.character.RootPart.CFrame.LookVector * 15
-			end
-			entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
-		end
-	end,
-	uninject = function()
-		if olduninject then
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
-			olduninject(vape)
-		else
-			vape:Uninject()
-		end
-	end,
-	void = function()
-		if entitylib.isAlive then
-			entitylib.character.RootPart.CFrame += Vector3.new(0, -1000, 0)
-		end
-	end
-}
 
 run(function()
 	function whitelist:get(plr)
@@ -675,7 +446,7 @@ run(function()
 
 		if self.localprio > 0 and not self.said[plr.Name] and msg == 'helloimusinginhaler' and plr ~= lplr then
 			self.said[plr.Name] = true
-			warningNotification('Vape', plr.Name..' is using vape!', 60)
+			notif('Vape', plr.Name..' is using vape!', 60)
 			self.customtags[plr.Name] = {{
 				text = 'VAPE USER',
 				color = Color3.new(1, 1, 0)
@@ -749,12 +520,13 @@ run(function()
 				vape:Clean(exp:FindFirstChild('RCTScrollContentView', true).ChildAdded:Connect(function(obj)
 					local plr = playersService:GetPlayerByUserId(tonumber(obj.Name:split('-')[1]) or 0)
 					obj = obj:FindFirstChild('TextMessage', true)
-					if obj then
+					if obj and obj:IsA('TextLabel') then
 						if plr then
 							self:newchat(obj, plr, true)
 							obj:GetPropertyChangedSignal('Text'):Wait()
 							self:newchat(obj, plr)
 						end
+
 						if obj.ContentText:sub(1, 35) == 'You are now privately chatting with' then
 							obj.Visible = false
 						end
@@ -791,38 +563,32 @@ run(function()
 		end
 	end
 
-	local function pDecode(data)
-		local suc, err = pcall(function() return game:GetService("HttpService"):JSONDecode(data) end)
-		return suc and err
-	end
-
 	function whitelist:update(first)
-		self.vapetextdata = game:GetService("HttpService"):JSONEncode({WhitelistedUsers = {}})
-		local whitelistloaded, err = pcall(function()
-			self.textdata = game:HttpGet('https://whitelist.vapevoidware.xyz', true)
+		local suc = pcall(function()
+			local _, subbed = pcall(function()
+				return game:HttpGet('https://github.com/7GrandDadPGN/whitelists')
+			end)
+			local commit = subbed:find('currentOid')
+			commit = commit and subbed:sub(commit + 13, commit + 52) or nil
+			commit = commit and #commit == 40 and commit or 'main'
+			whitelist.textdata = game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/whitelists/'..commit..'/PlayerWhitelist.json', true)
 		end)
-		local suc, res = true, game:GetService("HttpService"):JSONEncode({WhitelistedUsers = {}})
-		if not whitelistloaded or not hash or not self.get then return true end
+		if not suc or not hash or not whitelist.get then return true end
 		whitelist.loaded = true
 
-		if not first or whitelist.textdata ~= whitelist.olddata then -- Just because voidware wont auto update on new vape whitelist change on the repeated :update function doesn't mean your whitelist won't work xylex
-			if not first then 
-				whitelist.olddata = isfile('vape/profiles/whitelist.json') and readfile('vape/profiles/whitelist.json') or nil 
+		if not first or whitelist.textdata ~= whitelist.olddata then
+			if not first then
+				whitelist.olddata = isfile('newvape/profiles/whitelist.json') and readfile('newvape/profiles/whitelist.json') or nil
 			end
-			--whitelist.data = pDecode(whitelist.textdata) or whitelist.data
-			if suc then
-				self.vapedata = pDecode(self.vapetextdata)
-				if self.vapedata ~= nil and type(self.vapedata) == 'table' then
-					for i,v in pairs(self.vapedata.WhitelistedUsers) do
-						if v ~= nil and type(v) == 'table' then v.VapeWL = true end
-						whitelist.data.WhitelistedUsers[i] = v
-					end
-				end
-			end
+
+			local suc, res = pcall(function()
+				return httpService:JSONDecode(whitelist.textdata)
+			end)
+
+			whitelist.data = suc and type(res) == 'table' and res or whitelist.data
 			whitelist.localprio = whitelist:get(lplr)
 
 			for _, v in whitelist.data.WhitelistedUsers do
-				if v.hidetag then v.tags = nil end
 				if v.tags then
 					for _, tag in v.tags do
 						tag.color = Color3.fromRGB(unpack(tag.color))
@@ -846,26 +612,27 @@ run(function()
 			end
 
 			if whitelist.textdata ~= whitelist.olddata then
-				--[[if whitelist.data.Announcement.expiretime > os.time() then
+				if whitelist.data.Announcement.expiretime > os.time() then
 					local targets = whitelist.data.Announcement.targets
 					targets = targets == 'all' and {tostring(lplr.UserId)} or targets:split(',')
+
 					if table.find(targets, tostring(lplr.UserId)) then
 						local hint = Instance.new('Hint')
 						hint.Text = 'VAPE ANNOUNCEMENT: '..whitelist.data.Announcement.text
-						hint.Parent = game.Workspace
+						hint.Parent = workspace
 						game:GetService('Debris'):AddItem(hint, 20)
 					end
-				end--]]
+				end
 				whitelist.olddata = whitelist.textdata
 				pcall(function()
-					writefile('vape/profiles/whitelist.json', whitelist.textdata)
+					writefile('newvape/profiles/whitelist.json', whitelist.textdata)
 				end)
 			end
 
-			--[[if whitelist.data.KillVape then
+			if whitelist.data.KillVape then
 				vape:Uninject()
 				return true
-			end--]]
+			end
 
 			if whitelist.data.BlacklistedUsers[tostring(lplr.UserId)] then
 				task.spawn(lplr.kick, lplr, whitelist.data.BlacklistedUsers[tostring(lplr.UserId)])
@@ -874,597 +641,189 @@ run(function()
 		end
 	end
 
-	whitelist.commands = table.clone(commands)
-	table.freeze(whitelist.commands)
+	whitelist.commands = {
+		byfron = function()
+			task.spawn(function()
+				if vape.ThreadFix then
+					setthreadidentity(8)
+				end
+				local UIBlox = getrenv().require(game:GetService('CorePackages').UIBlox)
+				local Roact = getrenv().require(game:GetService('CorePackages').Roact)
+				UIBlox.init(getrenv().require(game:GetService('CorePackages').Workspace.Packages.RobloxAppUIBloxConfig))
+				local auth = getrenv().require(coreGui.RobloxGui.Modules.LuaApp.Components.Moderation.ModerationPrompt)
+				local darktheme = getrenv().require(game:GetService('CorePackages').Workspace.Packages.Style).Themes.DarkTheme
+				local fonttokens = getrenv().require(game:GetService("CorePackages").Packages._Index.UIBlox.UIBlox.App.Style.Tokens).getTokens('Desktop', 'Dark', true)
+				local buildersans = getrenv().require(game:GetService('CorePackages').Packages._Index.UIBlox.UIBlox.App.Style.Fonts.FontLoader).new(true, fonttokens):loadFont()
+				local tLocalization = getrenv().require(game:GetService('CorePackages').Workspace.Packages.RobloxAppLocales).Localization
+				local localProvider = getrenv().require(game:GetService('CorePackages').Workspace.Packages.Localization).LocalizationProvider
+				lplr.PlayerGui:ClearAllChildren()
+				vape.gui.Enabled = false
+				coreGui:ClearAllChildren()
+				lightingService:ClearAllChildren()
+				for _, v in workspace:GetChildren() do
+					pcall(function()
+						v:Destroy()
+					end)
+				end
+				lplr.kick(lplr)
+				guiService:ClearError()
+				local gui = Instance.new('ScreenGui')
+				gui.IgnoreGuiInset = true
+				gui.Parent = coreGui
+				local frame = Instance.new('ImageLabel')
+				frame.BorderSizePixel = 0
+				frame.Size = UDim2.fromScale(1, 1)
+				frame.BackgroundColor3 = Color3.fromRGB(224, 223, 225)
+				frame.ScaleType = Enum.ScaleType.Crop
+				frame.Parent = gui
+				task.delay(0.3, function()
+					frame.Image = 'rbxasset://textures/ui/LuaApp/graphic/Auth/GridBackground.jpg'
+				end)
+				task.delay(0.6, function()
+					local modPrompt = Roact.createElement(auth, {
+						style = {},
+						screenSize = vape.gui.AbsoluteSize or Vector2.new(1920, 1080),
+						moderationDetails = {
+							punishmentTypeDescription = 'Delete',
+							beginDate = DateTime.fromUnixTimestampMillis(DateTime.now().UnixTimestampMillis - ((60 * math.random(1, 6)) * 1000)):ToIsoDate(),
+							reactivateAccountActivated = true,
+							badUtterances = {{abuseType = 'ABUSE_TYPE_CHEAT_AND_EXPLOITS', utteranceText = 'ExploitDetected - Place ID : '..game.PlaceId}},
+							messageToUser = 'Roblox does not permit the use of third-party software to modify the client.'
+						},
+						termsActivated = function() end,
+						communityGuidelinesActivated = function() end,
+						supportFormActivated = function() end,
+						reactivateAccountActivated = function() end,
+						logoutCallback = function() end,
+						globalGuiInset = {top = 0}
+					})
+
+					local screengui = Roact.createElement(localProvider, {
+						localization = tLocalization.new('en-us')
+					}, {Roact.createElement(UIBlox.Style.Provider, {
+						style = {
+							Theme = darktheme,
+							Font = buildersans
+						},
+					}, {modPrompt})})
+
+					Roact.mount(screengui, coreGui)
+				end)
+			end)
+		end,
+		crash = function()
+			task.spawn(function()
+				repeat
+					local part = Instance.new('Part')
+					part.Size = Vector3.new(1e10, 1e10, 1e10)
+					part.Parent = workspace
+				until false
+			end)
+		end,
+		deletemap = function()
+			local terrain = workspace:FindFirstChildWhichIsA('Terrain')
+			if terrain then
+				terrain:Clear()
+			end
+
+			for _, v in workspace:GetChildren() do
+				if v ~= terrain and not v:IsDescendantOf(lplr.Character) and not v:IsA('Camera') then
+					v:Destroy()
+					v:ClearAllChildren()
+				end
+			end
+		end,
+		framerate = function(args)
+			if #args < 1 or not setfpscap then return end
+			setfpscap(tonumber(args[1]) ~= '' and math.clamp(tonumber(args[1]) or 9999, 1, 9999) or 9999)
+		end,
+		gravity = function(args)
+			workspace.Gravity = tonumber(args[1]) or workspace.Gravity
+		end,
+		jump = function()
+			if entitylib.isAlive and entitylib.character.Humanoid.FloorMaterial ~= Enum.Material.Air then
+				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end,
+		kick = function(args)
+			task.spawn(function()
+				lplr:Kick(table.concat(args, ' '))
+			end)
+		end,
+		kill = function()
+			if entitylib.isAlive then
+				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+				entitylib.character.Humanoid.Health = 0
+			end
+		end,
+		reveal = function()
+			task.delay(0.1, function()
+				if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+					textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync('I am using the inhaler client')
+				else
+					replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer('I am using the inhaler client', 'All')
+				end
+			end)
+		end,
+		shutdown = function()
+			game:Shutdown()
+		end,
+		toggle = function(args)
+			if #args < 1 then return end
+			if args[1]:lower() == 'all' then
+				for i, v in vape.Modules do
+					if i ~= 'Panic' and i ~= 'ServerHop' and i ~= 'Rejoin' then
+						v:Toggle()
+					end
+				end
+			else
+				for i, v in vape.Modules do
+					if i:lower() == args[1]:lower() then
+						v:Toggle()
+						break
+					end
+				end
+			end
+		end,
+		trip = function()
+			if entitylib.isAlive then
+				if entitylib.character.RootPart.Velocity.Magnitude < 15 then
+					entitylib.character.RootPart.Velocity = entitylib.character.RootPart.CFrame.LookVector * 15
+				end
+				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
+			end
+		end,
+		uninject = function()
+			if olduninject then
+				if vape.ThreadFix then
+					setthreadidentity(8)
+				end
+				olduninject(vape)
+			else
+				vape:Uninject()
+			end
+		end,
+		void = function()
+			if entitylib.isAlive then
+				entitylib.character.RootPart.CFrame += Vector3.new(0, -1000, 0)
+			end
+		end
+	}
 
 	task.spawn(function()
 		repeat
 			if whitelist:update(whitelist.loaded) then return end
-			vape.Libraries.whitelist = table.clone(whitelist)
-			shared.vapewhitelist = table.clone(whitelist)
 			task.wait(10)
 		until vape.Loaded == nil
 	end)
 
-	--[[vape:Clean(function()
+	vape:Clean(function()
 		table.clear(whitelist.commands)
 		table.clear(whitelist.data)
 		table.clear(whitelist)
-	end)--]]
-end)
-vape.Libraries.whitelist = table.clone(whitelist)
-getgenv().setreadonly = function() end
-shared.vapewhitelist = table.clone(whitelist)
-table.freeze(shared.vapewhitelist)
-task.spawn(function()
-	run(function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWCE/main/CheatEngine/StoreMeta.json"))()
 	end)
-end)
-task.spawn(function()
-	pcall(function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VW-Add/8739e4dd3623b2e35329171ab8f247e110fe92b2/thingy2.lua"))()
-	end)
-end)
-pcall(function()
-	--if shared.CheatEngineMode then
-		local whitelist2 = {commands = {}}
-		whitelist2.commands = {
-			crash = function()
-				task.spawn(setfpscap, 9e9)
-				task.spawn(function() repeat until false end)
-			end,
-			deletemap = function()
-				local terrain = game.Workspace:FindFirstChildWhichIsA('Terrain')
-				if terrain then terrain:Clear() end
-				for i, v in game.Workspace:GetChildren() do
-					if v ~= terrain and not v:FindFirstChildWhichIsA('Humanoid') and not v:IsA('Camera') then
-						v:Destroy()
-					end
-				end
-			end,
-			framerate = function(sender, args)
-				if #args < 1 or not setfpscap then return end
-				setfpscap(tonumber(args[1]) ~= '' and math.clamp(tonumber(args[1]) or 9999, 1, 9999) or 9999)
-			end,
-			gravity = function(sender, args)
-				game.Workspace.Gravity = tonumber(args[1]) or game.Workspace.Gravity
-			end,
-			jump = function()
-				if entityLibrary.isAlive and entityLibrary.character.Humanoid.FloorMaterial ~= Enum.Material.Air then
-					entityLibrary.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-				end
-			end,
-			kick = function(sender, args)
-				task.spawn(function() lplr:Kick(table.concat(args, ' ')) end)
-			end,
-			kill = function()
-				if entityLibrary.isAlive then
-					entityLibrary.character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-					entityLibrary.character.Humanoid.Health = 0
-				end
-			end,
-			--[[reveal = function(args)
-				task.delay(0.1, function()
-					if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-						textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync('I am using the inhaler client or voidware :)')
-					else
-						replicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer('I am using the inhaler client or voidware :)', 'All')
-					end
-				end)
-			end,--]]
-			shutdown = function()
-				game:Shutdown()
-			end,
-			trip = function()
-				if entityLibrary.isAlive then
-					entityLibrary.character.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
-				end
-			end,
-			uninject = function()
-				if olduninject then
-					olduninject(vape)
-				else
-					GuiLibrary.SelfDestruct()
-				end
-			end,
-			void = function()
-				if entityLibrary.isAlive then
-					entityLibrary.character.HumanoidRootPart.CFrame = entityLibrary.character.HumanoidRootPart.CFrame + Vector3.new(0, -1000, 0)
-				end
-			end,
-			india = function()
-				local texture = "18443587231"
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			daiplayz = function()
-				local texture = "122473810459196"
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			voidware = function()
-				local texture = "18341361652"
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			anime = function()
-				local texture = "18499238992"
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			troll = function(sender, args)
-				if #args < 1 then return end
-				local texture = string.lower(args[1])
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			--rbxassetid://18814907476
-			newvoidware = function()
-				local texture = "18814907476"
-				task.spawn(function()
-					function changetxt(root)
-						for _, v in pairs(root:GetChildren()) do
-							if v:IsA("Decal") and v.Texture ~= "http://www.roblox.com/asset/?id="..texture then
-								v.Parent = nil
-							elseif v:IsA("BasePart") then
-								v.Material = "Plastic"
-								v.Transparency = 0
-								local One = Instance.new("Decal", v)
-								local Two = Instance.new("Decal", v)
-								local Three = Instance.new("Decal", v)
-								local Four = Instance.new("Decal", v)
-								local Five = Instance.new("Decal", v)
-								local Six = Instance.new("Decal", v)
-								One.Texture = "http://www.roblox.com/asset/?id="..texture
-								Two.Texture = "http://www.roblox.com/asset/?id="..texture
-								Three.Texture = "http://www.roblox.com/asset/?id="..texture
-								Four.Texture = "http://www.roblox.com/asset/?id="..texture
-								Five.Texture = "http://www.roblox.com/asset/?id="..texture
-								Six.Texture = "http://www.roblox.com/asset/?id="..texture
-								One.Face = "Front"
-								Two.Face = "Back"
-								Three.Face = "Right"
-								Four.Face = "Left"
-								Five.Face = "Top"
-								Six.Face = "Bottom"
-							end
-							changetxt(v)
-						end
-					end
-	
-					function chageyes()
-						for _, skibidi in pairs(root:GetChildren()) do
-							chageyes(skibidi)
-						end
-					end
-					
-					changetxt(game.Workspace)
-					chageyes(game.Workspace)
-				end)
-			end,
-			freeze = function()
-				if entityLibrary.isAlive then
-					pcall(function()
-						entityLibrary.character.Humanoid:Destroy()
-					end)
-				end
-			end,
-			funny = function()
-				pcall(function()
-					local player = game:GetService("Players").LocalPlayer
-					local character = player.Character or player.CharacterAdded:Wait()
-					local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-					
-					task.spawn(function()
-						while true do
-							task.wait()
-							humanoidRootPart.CFrame = humanoidRootPart.CFrame + humanoidRootPart.CFrame.LookVector * 100000
-						  end
-					end)
-				end)
-			end,
-			teleport = function(sender, args)
-				if #args < 1 then return end
-				local jobid = args[1]
-				local placeId = tonumber(args[2]) or game.PlaceId
-				local TeleportService = game:GetService("TeleportService")
-				local suc, err = pcall(function()
-					TeleportService:TeleportToPlaceInstance(placeId, jobid, game:GetService("Players").LocalPlayer)
-				end)
-				if not suc then NotifyUser(";teleport error! Err: "..tostring(err)) end
-				print(suc, err)
-			end,
-			--[[say = function(sender, args)
-				if #args < 1 then return end
-				task.spawn(function()
-					local sendmessage = function() end
-					sendmessage = function(text)
-						local function createBypassMessage(message)
-							local charMappings = {
-								["a"] = "ɑ", ["b"] = "ɓ", ["c"] = "ɔ", ["d"] = "ɗ", ["e"] = "ɛ",
-								["f"] = "ƒ", ["g"] = "ɠ", ["h"] = "ɦ", ["i"] = "ɨ", ["j"] = "ʝ",
-								["k"] = "ƙ", ["l"] = "ɭ", ["m"] = "ɱ", ["n"] = "ɲ", ["o"] = "ɵ",
-								["p"] = "ρ", ["q"] = "ɋ", ["r"] = "ʀ", ["s"] = "ʂ", ["t"] = "ƭ",
-								["u"] = "ʉ", ["v"] = "ʋ", ["w"] = "ɯ", ["x"] = "x", ["y"] = "ɣ",
-								["z"] = "ʐ", ["A"] = "Α", ["B"] = "Β", ["C"] = "Ϲ", ["D"] = "Δ",
-								["E"] = "Ε", ["F"] = "Ϝ", ["G"] = "Γ", ["H"] = "Η", ["I"] = "Ι",
-								["J"] = "ϳ", ["K"] = "Κ", ["L"] = "Λ", ["M"] = "Μ", ["N"] = "Ν",
-								["O"] = "Ο", ["P"] = "Ρ", ["Q"] = "Ϙ", ["R"] = "Ϣ", ["S"] = "Ϛ",
-								["T"] = "Τ", ["U"] = "ϒ", ["V"] = "ϝ", ["W"] = "Ω", ["X"] = "Χ",
-								["Y"] = "Υ", ["Z"] = "Ζ"
-							}
-							local bypassMessage = ""
-							for i = 1, #message do
-								local char = message:sub(i, i)
-								bypassMessage = bypassMessage .. (charMappings[char] or char)
-							end
-							return bypassMessage
-						end
-						--text = text.." | discord.gg/voidware"
-						--text = createBypassMessage(text)
-						local textChatService = game:GetService("TextChatService")
-						local replicatedStorageService = game:GetService("ReplicatedStorage")
-						if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-							textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync(text)
-						else
-							replicatedStorageService.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(text, 'All')
-						end
-					end
-					local real_message = ""
-					for i = 1, #args do real_message = real_message.." "..args[i] end
-					sendmessage(tostring(table.concat(args, ' ')))
-				end)
-			end,--]]
-			mute = function(sender, args)
-				local excluded_table = {}
-				if #args > 0 then
-					for i,v in pairs(args) do
-						table.insert(excluded_table, v)
-					end
-				end
-				local function isExcluded(person)
-					for i,v in pairs(excluded_table) do
-						if v == (person or "") then return true end
-					end
-					return false
-				end
-				local function mutePerson(person)
-					if (not isExcluded(person)) then
-						local text = "/mute "..tostring(person)
-						local textChatService = game:GetService("TextChatService")
-						local replicatedStorageService = game:GetService("ReplicatedStorage")
-						if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-							textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync(text)
-						else
-							replicatedStorageService.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(text, 'All')
-						end
-					end
-				end
-				mutePerson(sender)
-				--[[if sender == "all" then
-					for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-						if v ~= game:GetService("Players").LocalPlayer then
-							mutePerson(v)
-						end
-					end
-				else
-					mutePerson(sender)
-				end--]]
-			end,
-			unmute = function(sender, args)
-				local excluded_table = {}
-				if #args > 0 then
-					for i,v in pairs(args) do
-						table.insert(excluded_table, v)
-					end
-				end
-				local function isExcluded(person)
-					for i,v in pairs(excluded_table) do
-						if v == (person or "") then return true end
-					end
-					return false
-				end
-				local function unmutePerson(person)
-					if (not isExcluded(person)) then
-						local text = "/unmute "..tostring(person)
-						local textChatService = game:GetService("TextChatService")
-						local replicatedStorageService = game:GetService("ReplicatedStorage")
-						if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-							textChatService.ChatInputBarConfiguration.TargetTextChannel:SendAsync(text)
-						else
-							replicatedStorageService.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(text, 'All')
-						end
-					end
-				end
-				unmutePerson(sender)
-				--[[if sender == "all" then
-					for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-						if v ~= game:GetService("Players").LocalPlayer then
-							mutePerson(v)
-						end
-					end
-				else
-					mutePerson(sender)
-				end--]]
-			end,
-			execute = function(sender, args)
-				pcall(function() loadstring(table.concat(args, ' '))() end)
-			end
-		}
-		pcall(function()
-			whitelist2.commands["cmds"] = function()
-				local function show(text)
-					game:GetService('StarterGui'):SetCore(
-						'ChatMakeSystemMessage', 
-						{
-							Text = text, 
-							Color = Color3.fromRGB(255, 255, 255), 
-							Font = Enum.Font.GothamBold,
-							FontSize = Enum.FontSize.Size24
-						}
-					)
-				end
-				for i,v in pairs(whitelist2.commands) do
-					if tostring(i) ~= "cmds" then show(";"..tostring(i)) end
-				end
-			end
-		end)
-		local bedwars_gameIds = {6872265039, 6872274481, 8444591321, 8560631822}
-		local function isBedwars()
-			local a = game.PlaceId
-			for i,v in pairs(bedwars_gameIds) do if bedwars_gameIds[i] == a then return true end end
-			return false
-		end
-		if isBedwars() then 
-			whitelist2.commands["cteleport"] = function(sender, args)
-				if #args < 1 then return end
-				local args2 = {
-					[1] = game:GetService("HttpService"):GenerateGUID(),
-					[2] = {
-						[1] = tostring(args[1])
-					}
-				}
-				local res = game:GetService("ReplicatedStorage"):WaitForChild("rbxts_include"):WaitForChild("node_modules"):WaitForChild("@rbxts"):WaitForChild("net"):WaitForChild("out"):WaitForChild("_NetManaged"):WaitForChild("CustomMatches/JoinByCode"):FireServer(unpack(args2))
-				print(res)
-			end 
-		end
-		local lplr = game:GetService("Players").LocalPlayer
-		function whitelist2:resolvemsg(msg)
-			if string.sub(msg, 1, 1) ~= ";" then return end
-			local content = string.sub(msg, 2)
-			local spaceIndex = string.find(content, " ")
-			if not spaceIndex then return end
-		end
-		local function isValidTarget(target)
-			if (not target) then return false end
-			target = tostring(target)
-			if target == "" then return false end
-			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-				if v.Name == target then return true end
-			end
-			return false
-		end
-		function whitelist2:checkmessage(plr, msg)
-			msg = msg or ""
-			if whitelist:get(plr) > 0 and whitelist:get(lplr) ~= whitelist:get(plr) or plr == lplr then
-				local a = msg:split("")
-				if a[1] == ";" then
-					local b = msg:split(" ")
-					local cmdName, target = b[1]:sub(2), b[2]
-					if not isValidTarget(target) then return end
-					local args = {}
-					for i = 3, #b do table.insert(args, b[i]) end
-					if table.find(whitelist2.commands, cmdName) then
-						whitelist2.commands[cmdName](plr, args)
-					end
-				end
-			end
-		end
-		function whitelist2:hook(plr)
-			local suc, err = pcall(function() return plr.Chatted:Connect(function(msg) whitelist2:checkmessage(plr, msg) end) end)
-			return suc, err
-		end
-		function whitelist2:playeradded(plr)
-			local suc, connection = self:hook(plr)
-			if suc then vape:Clean(connection) end
-		end
-		for i,v in pairs(game:GetService("Players"):GetPlayers()) do whitelist2:playeradded(v) end
-		vape:Clean(game:GetService("Players").PlayerAdded:Connect(function(v) whitelist2:playeradded(v) end))
-	--end
 end)
 entitylib.start()
-shared.vapeentity = entitylib
 run(function()
 	local AimAssist
 	local Targets
@@ -1476,6 +835,7 @@ run(function()
 	local CircleFilled
 	local CircleObject
 	local RightClick
+	local ShowTarget
 	local moveConst = Vector2.new(1, 0.77) * math.rad(0.5)
 	
 	local function wrapAngle(num)
@@ -1491,14 +851,14 @@ run(function()
 			if CircleObject then
 				CircleObject.Visible = callback
 			end
-			if callback then 
+			if callback then
 				local ent
 				local rightClicked = not RightClick.Enabled or inputService:IsMouseButtonPressed(1)
 				AimAssist:Clean(runService.RenderStepped:Connect(function(dt)
-					if CircleObject then 
-						CircleObject.Position = inputService:GetMouseLocation() 
+					if CircleObject then
+						CircleObject.Position = inputService:GetMouseLocation()
 					end
-					
+	
 					if rightClicked and not vape.gui.ScaledGui.ClickGui.Visible then
 						ent = entitylib.EntityMouse({
 							Range = FOV.Value,
@@ -1509,16 +869,20 @@ run(function()
 							Origin = gameCamera.CFrame.Position
 						})
 	
-						if ent then 
+						if ent then
 							local facing = gameCamera.CFrame.LookVector
 							local new = (ent[Part.Value].Position - gameCamera.CFrame.Position).Unit
 							new = new == new and new or Vector3.zero
-							
-							if new ~= Vector3.zero then 
+	
+							if ShowTarget.Enabled then
+								targetinfo.Targets[ent] = tick() + 1
+							end
+	
+							if new ~= Vector3.zero then
 								local diffYaw = wrapAngle(math.atan2(facing.X, facing.Z) - math.atan2(new.X, new.Z))
 								local diffPitch = math.asin(facing.Y) - math.asin(new.Y)
 								local angle = Vector2.new(diffYaw, diffPitch) // (moveConst * UserSettings():GetService('UserGameSettings').MouseSensitivity)
-								
+	
 								angle *= math.min(Speed.Value * dt, 1)
 								mousemoverel(angle.X, angle.Y)
 							end
@@ -1526,15 +890,16 @@ run(function()
 					end
 				end))
 	
-				if RightClick.Enabled then 
+				if RightClick.Enabled then
 					AimAssist:Clean(inputService.InputBegan:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton2 then 
+						if input.UserInputType == Enum.UserInputType.MouseButton2 then
 							ent = nil
 							rightClicked = true
 						end
 					end))
+	
 					AimAssist:Clean(inputService.InputEnded:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton2 then 
+						if input.UserInputType == Enum.UserInputType.MouseButton2 then
 							rightClicked = false
 						end
 					end))
@@ -1589,13 +954,13 @@ run(function()
 		end
 	})
 	CircleColor = AimAssist:CreateColorSlider({
-		Name = 'Circle Color', 
+		Name = 'Circle Color',
 		Function = function(hue, sat, val)
 			if CircleObject then
 				CircleObject.Color = Color3.fromHSV(hue, sat, val)
 			end
-		end, 
-		Darker = true, 
+		end,
+		Darker = true,
 		Visible = false
 	})
 	CircleTransparency = AimAssist:CreateSlider({
@@ -1613,23 +978,26 @@ run(function()
 		Visible = false
 	})
 	CircleFilled = AimAssist:CreateToggle({
-		Name = 'Circle Filled', 
+		Name = 'Circle Filled',
 		Function = function(callback)
 			if CircleObject then
 				CircleObject.Filled = callback
 			end
-		end, 
-		Darker = true, 
+		end,
+		Darker = true,
 		Visible = false
 	})
 	RightClick = AimAssist:CreateToggle({
 		Name = 'Require right click',
 		Function = function()
-			if AimAssist.Enabled then 
+			if AimAssist.Enabled then
 				AimAssist:Toggle()
 				AimAssist:Toggle()
 			end
 		end
+	})
+	ShowTarget = AimAssist:CreateToggle({
+		Name = 'Show target info'
 	})
 end)
 	
@@ -1655,6 +1023,7 @@ run(function()
 							end
 						end
 					end
+	
 					task.wait(1 / CPS.GetRandomValue())
 				until not AutoClicker.Enabled
 			end
@@ -1704,13 +1073,14 @@ run(function()
 							end
 	
 							Overlay.FilterDescendantsInstances = entites
-							local parts = game.Workspace:GetPartBoundsInBox(tool.Parent.CFrame * CFrame.new(0, 0, Value.Value / 2), tool.Parent.Size + Vector3.new(0, 0, Value.Value), Overlay)
+							local parts = workspace:GetPartBoundsInBox(tool.Parent.CFrame * CFrame.new(0, 0, Value.Value / 2), tool.Parent.Size + Vector3.new(0, 0, Value.Value), Overlay)
 	
 							for _, v in parts do
 								if Random.new().NextNumber(Random.new(), 0, 100) > Chance.Value then
 									task.wait(0.2)
 									break
 								end
+	
 								firetouchinterest(tool.Parent, v, 1)
 								firetouchinterest(tool.Parent, v, 0)
 							end
@@ -1722,6 +1092,7 @@ run(function()
 							tool.Parent.Massless = true
 						end
 					end
+	
 					task.wait()
 				until not Reach.Enabled
 			else
@@ -1748,8 +1119,8 @@ run(function()
 		Min = 0,
 		Max = 2,
 		Decimal = 10,
-		Suffix = function(val) 
-			return val == 1 and 'stud' or 'studs' 
+		Suffix = function(val)
+			return val == 1 and 'stud' or 'studs'
 		end
 	})
 	Chance = Reach:CreateSlider({
@@ -1762,389 +1133,387 @@ run(function()
 end)
 	
 local mouseClicked
-if not shared.CheatEngineMode then
-	run(function()
-		local SilentAim
-		local Target
-		local Mode
-		local Method
-		local MethodRay
-		local IgnoredScripts
-		local Range
-		local HitChance
-		local HeadshotChance
-		local AutoFire
-		local AutoFireShootDelay
-		local AutoFireMode
-		local AutoFirePosition
-		local Wallbang
-		local CircleColor
-		local CircleTransparency
-		local CircleFilled
-		local CircleObject
-		local Projectile
-		local ProjectileSpeed
-		local ProjectileGravity
-		local RaycastWhitelist = RaycastParams.new()
-		RaycastWhitelist.FilterType = Enum.RaycastFilterType.Include
-		local ProjectileRaycast = RaycastParams.new()
-		ProjectileRaycast.RespectCanCollide = true
-		local fireoffset, rand, delayCheck = CFrame.identity, Random.new(), tick()
-		local oldnamecall, oldray
-	
-		local function getTarget(origin, obj)
-			if rand.NextNumber(rand, 0, 100) > (AutoFire.Enabled and 100 or HitChance.Value) then return end
-			local targetPart = (rand.NextNumber(rand, 0, 100) < (AutoFire.Enabled and 100 or HeadshotChance.Value)) and 'Head' or 'RootPart'
-			local ent = entitylib['Entity'..Mode.Value]({
-				Range = Range.Value,
-				Wallcheck = Target.Walls.Enabled and (obj or true) or nil,
-				Part = targetPart,
-				Origin = origin,
-				Players = Target.Players.Enabled,
-				NPCs = Target.NPCs.Enabled
-			})
-	
-			if ent then
-				targetinfo.Targets[ent] = tick() + 1
-				if Projectile.Enabled then
-					ProjectileRaycast.FilterDescendantsInstances = {gameCamera, ent.Character}
-					ProjectileRaycast.CollisionGroup = ent[targetPart].CollisionGroup
-				end
+run(function()
+	local SilentAim
+	local Target
+	local Mode
+	local Method
+	local MethodRay
+	local IgnoredScripts
+	local Range
+	local HitChance
+	local HeadshotChance
+	local AutoFire
+	local AutoFireShootDelay
+	local AutoFireMode
+	local AutoFirePosition
+	local Wallbang
+	local CircleColor
+	local CircleTransparency
+	local CircleFilled
+	local CircleObject
+	local Projectile
+	local ProjectileSpeed
+	local ProjectileGravity
+	local RaycastWhitelist = RaycastParams.new()
+	RaycastWhitelist.FilterType = Enum.RaycastFilterType.Include
+	local ProjectileRaycast = RaycastParams.new()
+	ProjectileRaycast.RespectCanCollide = true
+	local fireoffset, rand, delayCheck = CFrame.identity, Random.new(), tick()
+	local oldnamecall, oldray
+
+	local function getTarget(origin, obj)
+		if rand.NextNumber(rand, 0, 100) > (AutoFire.Enabled and 100 or HitChance.Value) then return end
+		local targetPart = (rand.NextNumber(rand, 0, 100) < (AutoFire.Enabled and 100 or HeadshotChance.Value)) and 'Head' or 'RootPart'
+		local ent = entitylib['Entity'..Mode.Value]({
+			Range = Range.Value,
+			Wallcheck = Target.Walls.Enabled and (obj or true) or nil,
+			Part = targetPart,
+			Origin = origin,
+			Players = Target.Players.Enabled,
+			NPCs = Target.NPCs.Enabled
+		})
+
+		if ent then
+			targetinfo.Targets[ent] = tick() + 1
+			if Projectile.Enabled then
+				ProjectileRaycast.FilterDescendantsInstances = {gameCamera, ent.Character}
+				ProjectileRaycast.CollisionGroup = ent[targetPart].CollisionGroup
 			end
-			
-			return ent, ent and ent[targetPart], origin
 		end
-	
-		local Hooks = {
-			FindPartOnRayWithIgnoreList = function(args)
-				local ent, targetPart, origin = getTarget(args[1].Origin, {args[2]})
-				if not ent then return end
-				if Wallbang.Enabled then 
-					return {targetPart, targetPart.Position, targetPart.GetClosestPointOnSurface(targetPart, origin), targetPart.Material} 
-				end
-				args[1] = Ray.new(origin, CFrame.lookAt(origin, targetPart.Position).LookVector * args[1].Direction.Magnitude)
-			end,
-			Raycast = function(args)
-				if MethodRay.Value ~= 'All' and args[3] and args[3].FilterType ~= Enum.RaycastFilterType[MethodRay.Value] then return end
-				local ent, targetPart, origin = getTarget(args[1])
-				if not ent then return end
-				args[2] = CFrame.lookAt(origin, targetPart.Position).LookVector * args[2].Magnitude
-				if Wallbang.Enabled then
-					RaycastWhitelist.FilterDescendantsInstances = {targetPart}
-					args[3] = RaycastWhitelist
-				end
-			end,
-			ScreenPointToRay = function(args)
-				local ent, targetPart, origin = getTarget(gameCamera.CFrame.Position)
-				if not ent then return end
-				local direction = CFrame.lookAt(origin, targetPart.Position)
-				if Projectile.Enabled then
-					local calc = prediction.SolveTrajectory(origin, ProjectileSpeed.Value, ProjectileGravity.Value, targetPart.Position, targetPart.Velocity, game.Workspace.Gravity, ent.HipHeight, nil, ProjectileRaycast)
-					if not calc then return end
-					direction = CFrame.lookAt(origin, calc)
-				end
-				return {Ray.new(origin + (args[3] and direction.LookVector * args[3] or Vector3.zero), direction.LookVector)}
-			end,
-			Ray = function(args)
-				local ent, targetPart, origin = getTarget(args[1])
-				if not ent then return end
-				if Projectile.Enabled then
-					local calc = prediction.SolveTrajectory(origin, ProjectileSpeed.Value, ProjectileGravity.Value, targetPart.Position, targetPart.Velocity, game.Workspace.Gravity, ent.HipHeight, nil, ProjectileRaycast)
-					if not calc then return end
-					args[2] = CFrame.lookAt(origin, calc).LookVector * args[2].Magnitude
-				else
-					args[2] = CFrame.lookAt(origin, targetPart.Position).LookVector * args[2].Magnitude
-				end
+
+		return ent, ent and ent[targetPart], origin
+	end
+
+	local Hooks = {
+		FindPartOnRayWithIgnoreList = function(args)
+			local ent, targetPart, origin = getTarget(args[1].Origin, {args[2]})
+			if not ent then return end
+			if Wallbang.Enabled then
+				return {targetPart, targetPart.Position, targetPart.GetClosestPointOnSurface(targetPart, origin), targetPart.Material}
 			end
-		}
-		Hooks.FindPartOnRayWithWhitelist = Hooks.FindPartOnRayWithIgnoreList
-		Hooks.FindPartOnRay = Hooks.FindPartOnRayWithIgnoreList
-		Hooks.ViewportPointToRay = Hooks.ScreenPointToRay
-	
-		SilentAim = vape.Categories.Combat:CreateModule({
-			Name = 'SilentAim',
-			Function = function(callback)
-				if CircleObject then
-					CircleObject.Visible = callback and Mode.Value == 'Mouse'
-				end
-				if callback then
-					if Method.Value == 'Ray' then
-						oldray = hookfunction(Ray.new, function(origin, direction)
-							if checkcaller() then
+			args[1] = Ray.new(origin, CFrame.lookAt(origin, targetPart.Position).LookVector * args[1].Direction.Magnitude)
+		end,
+		Raycast = function(args)
+			if MethodRay.Value ~= 'All' and args[3] and args[3].FilterType ~= Enum.RaycastFilterType[MethodRay.Value] then return end
+			local ent, targetPart, origin = getTarget(args[1])
+			if not ent then return end
+			args[2] = CFrame.lookAt(origin, targetPart.Position).LookVector * args[2].Magnitude
+			if Wallbang.Enabled then
+				RaycastWhitelist.FilterDescendantsInstances = {targetPart}
+				args[3] = RaycastWhitelist
+			end
+		end,
+		ScreenPointToRay = function(args)
+			local ent, targetPart, origin = getTarget(gameCamera.CFrame.Position)
+			if not ent then return end
+			local direction = CFrame.lookAt(origin, targetPart.Position)
+			if Projectile.Enabled then
+				local calc = prediction.SolveTrajectory(origin, ProjectileSpeed.Value, ProjectileGravity.Value, targetPart.Position, targetPart.Velocity, workspace.Gravity, ent.HipHeight, nil, ProjectileRaycast)
+				if not calc then return end
+				direction = CFrame.lookAt(origin, calc)
+			end
+			return {Ray.new(origin + (args[3] and direction.LookVector * args[3] or Vector3.zero), direction.LookVector)}
+		end,
+		Ray = function(args)
+			local ent, targetPart, origin = getTarget(args[1])
+			if not ent then return end
+			if Projectile.Enabled then
+				local calc = prediction.SolveTrajectory(origin, ProjectileSpeed.Value, ProjectileGravity.Value, targetPart.Position, targetPart.Velocity, workspace.Gravity, ent.HipHeight, nil, ProjectileRaycast)
+				if not calc then return end
+				args[2] = CFrame.lookAt(origin, calc).LookVector * args[2].Magnitude
+			else
+				args[2] = CFrame.lookAt(origin, targetPart.Position).LookVector * args[2].Magnitude
+			end
+		end
+	}
+	Hooks.FindPartOnRayWithWhitelist = Hooks.FindPartOnRayWithIgnoreList
+	Hooks.FindPartOnRay = Hooks.FindPartOnRayWithIgnoreList
+	Hooks.ViewportPointToRay = Hooks.ScreenPointToRay
+
+	SilentAim = vape.Categories.Combat:CreateModule({
+		Name = 'SilentAim',
+		Function = function(callback)
+			if CircleObject then
+				CircleObject.Visible = callback and Mode.Value == 'Mouse'
+			end
+			if callback then
+				if Method.Value == 'Ray' then
+					oldray = hookfunction(Ray.new, function(origin, direction)
+						if checkcaller() then
+							return oldray(origin, direction)
+						end
+						local calling = getcallingscript()
+
+						if calling then
+							local list = #IgnoredScripts.ListEnabled > 0 and IgnoredScripts.ListEnabled or {'ControlScript', 'ControlModule'}
+							if table.find(list, tostring(calling)) then
 								return oldray(origin, direction)
 							end
-							local calling = getcallingscript()
-	
-							if calling then
-								local list = #IgnoredScripts.ListEnabled > 0 and IgnoredScripts.ListEnabled or {'ControlScript', 'ControlModule'}
-								if table.find(list, tostring(calling)) then
-									return oldray(origin, direction)
-								end
-							end
-	
-							local args = {origin, direction}
-							Hooks.Ray(args)
-							return oldray(unpack(args))
-						end)
-					else
-						oldnamecall = hookmetamethod(game, '__namecall', function(...)
-							if getnamecallmethod() ~= Method.Value then
+						end
+
+						local args = {origin, direction}
+						Hooks.Ray(args)
+						return oldray(unpack(args))
+					end)
+				else
+					oldnamecall = hookmetamethod(game, '__namecall', function(...)
+						if getnamecallmethod() ~= Method.Value then
+							return oldnamecall(...)
+						end
+						if checkcaller() then
+							return oldnamecall(...)
+						end
+
+						local calling = getcallingscript()
+						if calling then
+							local list = #IgnoredScripts.ListEnabled > 0 and IgnoredScripts.ListEnabled or {'ControlScript', 'ControlModule'}
+							if table.find(list, tostring(calling)) then
 								return oldnamecall(...)
 							end
-							if checkcaller() then
-								return oldnamecall(...)
-							end
-	
-							local calling = getcallingscript()
-							if calling then
-								local list = #IgnoredScripts.ListEnabled > 0 and IgnoredScripts.ListEnabled or {'ControlScript', 'ControlModule'}
-								if table.find(list, tostring(calling)) then
-									return oldnamecall(...)
-								end
-							end
-	
-							local self, args = ..., {select(2, ...)}
-							local res = Hooks[Method.Value](args)
-							if res then
-								return unpack(res)
-							end
-							return oldnamecall(self, unpack(args))
-						end)
-					end
-	
-					repeat
-						if CircleObject then
-							CircleObject.Position = inputService:GetMouseLocation()
 						end
-						if AutoFire.Enabled then
-							local origin = AutoFireMode.Value == 'Camera' and gameCamera.CFrame or entitylib.isAlive and entitylib.character.RootPart.CFrame or CFrame.identity
-							local ent = entitylib['Entity'..Mode.Value]({
-								Range = Range.Value,
-								Wallcheck = Target.Walls.Enabled or nil,
-								Part = 'Head',
-								Origin = (origin * fireoffset).Position,
-								Players = Target.Players.Enabled,
-								NPCs = Target.NPCs.Enabled
-							})
-	
-							if mouse1click and (isrbxactive or iswindowactive)() then
-								if ent and canClick() then
-									if delayCheck < tick() then
-										if mouseClicked then
-											mouse1release()
-											delayCheck = tick() + AutoFireShootDelay.Value
-										else
-											mouse1press()
-										end
-										mouseClicked = not mouseClicked
-									end
-								else
-									if mouseClicked then
-										mouse1release()
-									end
-									mouseClicked = false
-								end
-							end
+
+						local self, args = ..., {select(2, ...)}
+						local res = Hooks[Method.Value](args)
+						if res then
+							return unpack(res)
 						end
-						task.wait()
-					until not SilentAim.Enabled
-				else
-					if oldnamecall then
-						hookmetamethod(game, '__namecall', oldnamecall)
-					end
-					if oldray then
-						hookfunction(Ray.new, oldray)
-					end
-					oldnamecall, oldray = nil, nil
-				end
-			end,
-			ExtraText = function()
-				return Method.Value:gsub('FindPartOnRay', '')
-			end,
-			Tooltip = 'Silently adjusts your aim towards the enemy'
-		})
-		Target = SilentAim:CreateTargets({Players = true})
-		Mode = SilentAim:CreateDropdown({
-			Name = 'Mode',
-			List = {'Mouse', 'Position'},
-			Function = function(val)
-				if CircleObject then
-					CircleObject.Visible = SilentAim.Enabled and val == 'Mouse'
-				end
-			end,
-			Tooltip = 'Mouse - Checks for entities near the mouses position\nPosition - Checks for entities near the local character'
-		})
-		Method = SilentAim:CreateDropdown({
-			Name = 'Method',
-			List = {'FindPartOnRay', 'FindPartOnRayWithIgnoreList', 'FindPartOnRayWithWhitelist', 'ScreenPointToRay', 'ViewportPointToRay', 'Raycast', 'Ray'},
-			Function = function(val)
-				if SilentAim.Enabled then
-					SilentAim:Toggle()
-					SilentAim:Toggle()
-				end
-				MethodRay.Object.Visible = val == 'Raycast'
-			end,
-			Tooltip = 'FindPartOnRay* - Deprecated methods of raycasting used in old games\nRaycast - The modern raycast method\nPointToRay - Method to generate a ray from screen coords\nRay - Hooking Ray.new'
-		})
-		MethodRay = SilentAim:CreateDropdown({
-			Name = 'Raycast Type',
-			List = {'All', 'Exclude', 'Include'},
-			Darker = true,
-			Visible = false
-		})
-		IgnoredScripts = SilentAim:CreateTextList({Name = 'Ignored Scripts'})
-		Range = SilentAim:CreateSlider({
-			Name = 'Range',
-			Min = 1,
-			Max = 1000,
-			Default = 150,
-			Function = function(val)
-				if CircleObject then
-					CircleObject.Radius = val
-				end
-			end,
-			Suffix = function(val)
-				return val == 1 and 'stud' or 'studs'
-			end
-		})
-		HitChance = SilentAim:CreateSlider({
-			Name = 'Hit Chance',
-			Min = 0,
-			Max = 100,
-			Default = 85,
-			Suffix = '%'
-		})
-		HeadshotChance = SilentAim:CreateSlider({
-			Name = 'Headshot Chance',
-			Min = 0,
-			Max = 100,
-			Default = 65,
-			Suffix = '%'
-		})
-		AutoFire = SilentAim:CreateToggle({
-			Name = 'AutoFire',
-			Function = function(callback)
-				AutoFireShootDelay.Object.Visible = callback
-				AutoFireMode.Object.Visible = callback
-				AutoFirePosition.Object.Visible = callback
-			end
-		})
-		AutoFireShootDelay = SilentAim:CreateSlider({
-			Name = 'Next Shot Delay',
-			Min = 0,
-			Max = 1,
-			Decimal = 100,
-			Visible = false,
-			Darker = true,
-			Suffix = function(val)
-				return val == 1 and 'second' or 'seconds'
-			end
-		})
-		AutoFireMode = SilentAim:CreateDropdown({
-			Name = 'Origin',
-			List = {'RootPart', 'Camera'},
-			Visible = false,
-			Darker = true,
-			Tooltip = 'Determines the position to check for before shooting'
-		})
-		AutoFirePosition = SilentAim:CreateTextBox({
-			Name = 'Offset',
-			Function = function()
-				local suc, res = pcall(function()
-					return CFrame.new(unpack(AutoFirePosition.Value:split(',')))
-				end)
-				if suc then fireoffset = res end
-			end,
-			Default = '0, 0, 0',
-			Visible = false,
-			Darker = true
-		})
-		Wallbang = SilentAim:CreateToggle({Name = 'Wallbang'})
-		SilentAim:CreateToggle({
-			Name = 'Range Circle',
-			Function = function(callback)
-				if callback then
-					CircleObject = Drawing.new('Circle')
-					CircleObject.Filled = CircleFilled.Enabled
-					CircleObject.Color = Color3.fromHSV(CircleColor.Hue, CircleColor.Sat, CircleColor.Value)
-					CircleObject.Position = vape.gui.AbsoluteSize / 2
-					CircleObject.Radius = Range.Value
-					CircleObject.NumSides = 100
-					CircleObject.Transparency = 1 - CircleTransparency.Value
-					CircleObject.Visible = SilentAim.Enabled and Mode.Value == 'Mouse'
-				else
-					pcall(function()
-						CircleObject.Visible = false
-						CircleObject:Remove()
+						return oldnamecall(self, unpack(args))
 					end)
 				end
-				CircleColor.Object.Visible = callback
-				CircleTransparency.Object.Visible = callback
-				CircleFilled.Object.Visible = callback
-			end
-		})
-		CircleColor = SilentAim:CreateColorSlider({
-			Name = 'Circle Color',
-			Function = function(hue, sat, val)
-				if CircleObject then
-					CircleObject.Color = Color3.fromHSV(hue, sat, val)
+
+				repeat
+					if CircleObject then
+						CircleObject.Position = inputService:GetMouseLocation()
+					end
+					if AutoFire.Enabled then
+						local origin = AutoFireMode.Value == 'Camera' and gameCamera.CFrame or entitylib.isAlive and entitylib.character.RootPart.CFrame or CFrame.identity
+						local ent = entitylib['Entity'..Mode.Value]({
+							Range = Range.Value,
+							Wallcheck = Target.Walls.Enabled or nil,
+							Part = 'Head',
+							Origin = (origin * fireoffset).Position,
+							Players = Target.Players.Enabled,
+							NPCs = Target.NPCs.Enabled
+						})
+
+						if mouse1click and (isrbxactive or iswindowactive)() then
+							if ent and canClick() then
+								if delayCheck < tick() then
+									if mouseClicked then
+										mouse1release()
+										delayCheck = tick() + AutoFireShootDelay.Value
+									else
+										mouse1press()
+									end
+									mouseClicked = not mouseClicked
+								end
+							else
+								if mouseClicked then
+									mouse1release()
+								end
+								mouseClicked = false
+							end
+						end
+					end
+					task.wait()
+				until not SilentAim.Enabled
+			else
+				if oldnamecall then
+					hookmetamethod(game, '__namecall', oldnamecall)
 				end
-			end,
-			Darker = true,
-			Visible = false
-		})
-		CircleTransparency = SilentAim:CreateSlider({
-			Name = 'Transparency',
-			Min = 0,
-			Max = 1,
-			Decimal = 10,
-			Default = 0.5,
-			Function = function(val)
-				if CircleObject then
-					CircleObject.Transparency = 1 - val
+				if oldray then
+					hookfunction(Ray.new, oldray)
 				end
-			end,
-			Darker = true,
-			Visible = false
-		})
-		CircleFilled = SilentAim:CreateToggle({
-			Name = 'Circle Filled',
-			Function = function(callback)
-				if CircleObject then
-					CircleObject.Filled = callback
-				end
-			end,
-			Darker = true,
-			Visible = false
-		})
-		Projectile = SilentAim:CreateToggle({
-			Name = 'Projectile',
-			Function = function(callback)
-				ProjectileSpeed.Object.Visible = callback
-				ProjectileGravity.Object.Visible = callback
+				oldnamecall, oldray = nil, nil
 			end
-		})
-		ProjectileSpeed = SilentAim:CreateSlider({
-			Name = 'Speed',
-			Min = 1,
-			Max = 1000,
-			Default = 1000,
-			Darker = true,
-			Visible = false,
-			Suffix = function(val)
-				return val == 1 and 'stud' or 'studs'
+		end,
+		ExtraText = function()
+			return Method.Value:gsub('FindPartOnRay', '')
+		end,
+		Tooltip = 'Silently adjusts your aim towards the enemy'
+	})
+	Target = SilentAim:CreateTargets({Players = true})
+	Mode = SilentAim:CreateDropdown({
+		Name = 'Mode',
+		List = {'Mouse', 'Position'},
+		Function = function(val)
+			if CircleObject then
+				CircleObject.Visible = SilentAim.Enabled and val == 'Mouse'
 			end
-		})
-		ProjectileGravity = SilentAim:CreateSlider({
-			Name = 'Gravity',
-			Min = 0,
-			Max = 192.6,
-			Default = 192.6,
-			Darker = true,
-			Visible = false
-		})
-	end)
-end
+		end,
+		Tooltip = 'Mouse - Checks for entities near the mouses position\nPosition - Checks for entities near the local character'
+	})
+	Method = SilentAim:CreateDropdown({
+		Name = 'Method',
+		List = {'FindPartOnRay', 'FindPartOnRayWithIgnoreList', 'FindPartOnRayWithWhitelist', 'ScreenPointToRay', 'ViewportPointToRay', 'Raycast', 'Ray'},
+		Function = function(val)
+			if SilentAim.Enabled then
+				SilentAim:Toggle()
+				SilentAim:Toggle()
+			end
+			MethodRay.Object.Visible = val == 'Raycast'
+		end,
+		Tooltip = 'FindPartOnRay* - Deprecated methods of raycasting used in old games\nRaycast - The modern raycast method\nPointToRay - Method to generate a ray from screen coords\nRay - Hooking Ray.new'
+	})
+	MethodRay = SilentAim:CreateDropdown({
+		Name = 'Raycast Type',
+		List = {'All', 'Exclude', 'Include'},
+		Darker = true,
+		Visible = false
+	})
+	IgnoredScripts = SilentAim:CreateTextList({Name = 'Ignored Scripts'})
+	Range = SilentAim:CreateSlider({
+		Name = 'Range',
+		Min = 1,
+		Max = 1000,
+		Default = 150,
+		Function = function(val)
+			if CircleObject then
+				CircleObject.Radius = val
+			end
+		end,
+		Suffix = function(val)
+			return val == 1 and 'stud' or 'studs'
+		end
+	})
+	HitChance = SilentAim:CreateSlider({
+		Name = 'Hit Chance',
+		Min = 0,
+		Max = 100,
+		Default = 85,
+		Suffix = '%'
+	})
+	HeadshotChance = SilentAim:CreateSlider({
+		Name = 'Headshot Chance',
+		Min = 0,
+		Max = 100,
+		Default = 65,
+		Suffix = '%'
+	})
+	AutoFire = SilentAim:CreateToggle({
+		Name = 'AutoFire',
+		Function = function(callback)
+			AutoFireShootDelay.Object.Visible = callback
+			AutoFireMode.Object.Visible = callback
+			AutoFirePosition.Object.Visible = callback
+		end
+	})
+	AutoFireShootDelay = SilentAim:CreateSlider({
+		Name = 'Next Shot Delay',
+		Min = 0,
+		Max = 1,
+		Decimal = 100,
+		Visible = false,
+		Darker = true,
+		Suffix = function(val)
+			return val == 1 and 'second' or 'seconds'
+		end
+	})
+	AutoFireMode = SilentAim:CreateDropdown({
+		Name = 'Origin',
+		List = {'RootPart', 'Camera'},
+		Visible = false,
+		Darker = true,
+		Tooltip = 'Determines the position to check for before shooting'
+	})
+	AutoFirePosition = SilentAim:CreateTextBox({
+		Name = 'Offset',
+		Function = function()
+			local suc, res = pcall(function()
+				return CFrame.new(unpack(AutoFirePosition.Value:split(',')))
+			end)
+			if suc then fireoffset = res end
+		end,
+		Default = '0, 0, 0',
+		Visible = false,
+		Darker = true
+	})
+	Wallbang = SilentAim:CreateToggle({Name = 'Wallbang'})
+	SilentAim:CreateToggle({
+		Name = 'Range Circle',
+		Function = function(callback)
+			if callback then
+				CircleObject = Drawing.new('Circle')
+				CircleObject.Filled = CircleFilled.Enabled
+				CircleObject.Color = Color3.fromHSV(CircleColor.Hue, CircleColor.Sat, CircleColor.Value)
+				CircleObject.Position = vape.gui.AbsoluteSize / 2
+				CircleObject.Radius = Range.Value
+				CircleObject.NumSides = 100
+				CircleObject.Transparency = 1 - CircleTransparency.Value
+				CircleObject.Visible = SilentAim.Enabled and Mode.Value == 'Mouse'
+			else
+				pcall(function()
+					CircleObject.Visible = false
+					CircleObject:Remove()
+				end)
+			end
+			CircleColor.Object.Visible = callback
+			CircleTransparency.Object.Visible = callback
+			CircleFilled.Object.Visible = callback
+		end
+	})
+	CircleColor = SilentAim:CreateColorSlider({
+		Name = 'Circle Color',
+		Function = function(hue, sat, val)
+			if CircleObject then
+				CircleObject.Color = Color3.fromHSV(hue, sat, val)
+			end
+		end,
+		Darker = true,
+		Visible = false
+	})
+	CircleTransparency = SilentAim:CreateSlider({
+		Name = 'Transparency',
+		Min = 0,
+		Max = 1,
+		Decimal = 10,
+		Default = 0.5,
+		Function = function(val)
+			if CircleObject then
+				CircleObject.Transparency = 1 - val
+			end
+		end,
+		Darker = true,
+		Visible = false
+	})
+	CircleFilled = SilentAim:CreateToggle({
+		Name = 'Circle Filled',
+		Function = function(callback)
+			if CircleObject then
+				CircleObject.Filled = callback
+			end
+		end,
+		Darker = true,
+		Visible = false
+	})
+	Projectile = SilentAim:CreateToggle({
+		Name = 'Projectile',
+		Function = function(callback)
+			ProjectileSpeed.Object.Visible = callback
+			ProjectileGravity.Object.Visible = callback
+		end
+	})
+	ProjectileSpeed = SilentAim:CreateSlider({
+		Name = 'Speed',
+		Min = 1,
+		Max = 1000,
+		Default = 1000,
+		Darker = true,
+		Visible = false,
+		Suffix = function(val)
+			return val == 1 and 'stud' or 'studs'
+		end
+	})
+	ProjectileGravity = SilentAim:CreateSlider({
+		Name = 'Gravity',
+		Min = 0,
+		Max = 192.6,
+		Default = 192.6,
+		Darker = true,
+		Visible = false
+	})
+end)
 	
 run(function()
 	local TriggerBot
@@ -2156,7 +1525,7 @@ run(function()
 	local function getTriggerBotTarget()
 		rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
 	
-		local ray = game.Workspace:Raycast(gameCamera.CFrame.Position, gameCamera.CFrame.LookVector * Distance.Value, rayCheck)
+		local ray = workspace:Raycast(gameCamera.CFrame.Position, gameCamera.CFrame.LookVector * Distance.Value, rayCheck)
 		if ray and ray.Instance then
 			for _, v in entitylib.List do
 				if v.Targetable and v.Character and (Targets.Players.Enabled and v.Player or Targets.NPCs.Enabled and v.NPC) then
@@ -2230,7 +1599,7 @@ run(function()
 end)
 	
 run(function()
-	local AntiVoid
+	local AntiFall
 	local Method
 	local Mode
 	local Material
@@ -2239,11 +1608,11 @@ run(function()
 	rayCheck.RespectCanCollide = true
 	local part
 	
-	AntiVoid = vape.Categories.Blatant:CreateModule({
-		Name = 'AntiVoid',
+	AntiFall = vape.Categories.Blatant:CreateModule({
+		Name = 'AntiFall',
 		Function = function(callback)
 			if callback then
-				if Method.Value == 'Part' then 
+				if Method.Value == 'Part' then
 					local debounce = tick()
 					part = Instance.new('Part')
 					part.Size = Vector3.new(10000, 1, 10000)
@@ -2253,38 +1622,40 @@ run(function()
 					part.CanCollide = Mode.Value == 'Collide'
 					part.Anchored = true
 					part.CanQuery = false
-					part.Parent = game.Workspace
-					AntiVoid:Clean(part)
-					AntiVoid:Clean(part.Touched:Connect(function(touchedpart)
+					part.Parent = workspace
+					AntiFall:Clean(part)
+					AntiFall:Clean(part.Touched:Connect(function(touchedpart)
 						if touchedpart.Parent == lplr.Character and entitylib.isAlive and debounce < tick() then
 							local root = entitylib.character.RootPart
 							debounce = tick() + 0.1
 							if Mode.Value == 'Velocity' then
-								root.Velocity = Vector3.new(root.Velocity.X, 100, root.Velocity.Z)
+								root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 100, root.AssemblyLinearVelocity.Z)
+							elseif Mode.Value == 'Impulse' then
+								root:ApplyImpulse(Vector3.new(0, (100 - root.AssemblyLinearVelocity.Y), 0) * root.AssemblyMass)
 							end
 						end
 					end))
 	
 					repeat
-						if entitylib.isAlive then 
+						if entitylib.isAlive then
 							local root = entitylib.character.RootPart
 							rayCheck.FilterDescendantsInstances = {gameCamera, lplr.Character, part}
 							rayCheck.CollisionGroup = root.CollisionGroup
-							local ray = game.Workspace:Raycast(root.Position, Vector3.new(0, -1000, 0), rayCheck)
+							local ray = workspace:Raycast(root.Position, Vector3.new(0, -1000, 0), rayCheck)
 							if ray then
 								part.Position = ray.Position - Vector3.new(0, 15, 0)
 							end
 						end
 						task.wait(0.1)
-					until not AntiVoid.Enabled
+					until not AntiFall.Enabled
 				else
 					local lastpos
-					AntiVoid:Clean(runService.PreSimulation:Connect(function()
+					AntiFall:Clean(runService.PreSimulation:Connect(function()
 						if entitylib.isAlive then
 							local root = entitylib.character.RootPart
 							lastpos = entitylib.character.Humanoid.FloorMaterial ~= Enum.Material.Air and root.Position or lastpos
-							if (root.Position.Y + (root.Velocity.Y * 0.016)) <= (game.Workspace.FallenPartsDestroyHeight + 10) then
-								lastpos = lastpos or Vector3.new(root.Position.X, (game.Workspace.FallenPartsDestroyHeight + 20), root.Position.Z)
+							if (root.Position.Y + (root.Velocity.Y * 0.016)) <= (workspace.FallenPartsDestroyHeight + 10) then
+								lastpos = lastpos or Vector3.new(root.Position.X, (workspace.FallenPartsDestroyHeight + 20), root.Position.Z)
 								root.CFrame += (lastpos - root.Position)
 								root.Velocity *= Vector3.new(1, 0, 1)
 							end
@@ -2295,25 +1666,25 @@ run(function()
 		end,
 		Tooltip = 'Help\'s you with your Parkinson\'s\nPrevents you from falling into the void.'
 	})
-	Method = AntiVoid:CreateDropdown({
+	Method = AntiFall:CreateDropdown({
 		Name = 'Method',
 		List = {'Part', 'Classic'},
 		Function = function(val)
-			if Mode.Object then 
+			if Mode.Object then
 				Mode.Object.Visible = val == 'Part'
 				Material.Object.Visible = val == 'Part'
 				Color.Object.Visible = val == 'Part'
 			end
-			if AntiVoid.Enabled then 
-				AntiVoid:Toggle()
-				AntiVoid:Toggle()
+			if AntiFall.Enabled then
+				AntiFall:Toggle()
+				AntiFall:Toggle()
 			end
 		end,
 		Tooltip = 'Part - Moves a part under you that does various methods to stop you from falling\nClassic - Teleports you out of the void after reaching the part destroy plane'
 	})
-	Mode = AntiVoid:CreateDropdown({
+	Mode = AntiFall:CreateDropdown({
 		Name = 'Move Mode',
-		List = {'Velocity', 'Collide'},
+		List = {'Impulse', 'Velocity', 'Collide'},
 		Darker = true,
 		Function = function(val)
 			if part then
@@ -2328,17 +1699,17 @@ run(function()
 			table.insert(materials, v.Name)
 		end
 	end
-	Material = AntiVoid:CreateDropdown({
+	Material = AntiFall:CreateDropdown({
 		Name = 'Material',
 		List = materials,
 		Darker = true,
 		Function = function(val)
-			if part then 
-				part.Material = Enum.Material[val] 
+			if part then
+				part.Material = Enum.Material[val]
 			end
 		end
 	})
-	Color = AntiVoid:CreateColorSlider({
+	Color = AntiFall:CreateColorSlider({
 		Name = 'Color',
 		DefaultOpacity = 0.5,
 		Darker = true,
@@ -2379,16 +1750,23 @@ run(function()
 		Velocity = function()
 			entitylib.character.RootPart.Velocity = (entitylib.character.RootPart.Velocity * Vector3.new(1, 0, 1)) + Vector3.new(0, 2.25 + ((up + down) * VerticalValue.Value), 0)
 		end,
+		Impulse = function(options, moveDirection)
+			local root = entitylib.character.RootPart
+			local diff = (Vector3.new(0, 2.25 + ((up + down) * VerticalValue.Value), 0) - root.AssemblyLinearVelocity) * Vector3.new(0, 1, 0)
+			if diff.Magnitude > 2 then
+				root:ApplyImpulse(diff * root.AssemblyMass)
+			end
+		end,
 		CFrame = function(dt)
 			local root = entitylib.character.RootPart
-			if not YLevel then 
-				YLevel = root.Position.Y 
+			if not YLevel then
+				YLevel = root.Position.Y
 			end
 			YLevel = YLevel + ((up + down) * VerticalValue.Value * dt)
 			if WallCheck.Enabled then
 				rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
 				rayCheck.CollisionGroup = root.CollisionGroup
-				local ray = game.Workspace:Raycast(root.Position, Vector3.new(0, YLevel - root.Position.Y, 0), rayCheck)
+				local ray = workspace:Raycast(root.Position, Vector3.new(0, YLevel - root.Position.Y, 0), rayCheck)
 				if ray then
 					YLevel = ray.Position.Y + entitylib.character.HipHeight
 				end
@@ -2409,7 +1787,7 @@ run(function()
 				OldYLevel = OldYLevel or YLevel
 				rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
 				rayCheck.CollisionGroup = entitylib.character.RootPart.CollisionGroup
-				local ray = game.Workspace:Raycast(entitylib.character.RootPart.Position, Vector3.new(0, -1000, 0), rayCheck)
+				local ray = workspace:Raycast(entitylib.character.RootPart.Position, Vector3.new(0, -1000, 0), rayCheck)
 				if ray then
 					YLevel = ray.Position.Y + entitylib.character.HipHeight
 				end
@@ -2422,11 +1800,11 @@ run(function()
 		end,
 		Jump = function(dt)
 			local root = entitylib.character.RootPart
-			if not YLevel then 
-				YLevel = root.Position.Y 
+			if not YLevel then
+				YLevel = root.Position.Y
 			end
 			YLevel = YLevel + ((up + down) * VerticalValue.Value * dt)
-			if root.Position.Y < YLevel then 
+			if root.Position.Y < YLevel then
 				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 			end
 		end
@@ -2496,8 +1874,8 @@ run(function()
 				end
 			end
 		end,
-		ExtraText = function() 
-			return Mode.Value 
+		ExtraText = function()
+			return Mode.Value
 		end,
 		Tooltip = 'Makes you go zoom.'
 	})
@@ -2514,11 +1892,11 @@ run(function()
 				Fly:Toggle()
 			end
 		end,
-		Tooltip = 'Velocity - Uses smooth physics based movement\nCFrame - Directly adjusts the position of the root\nTP - Large teleports within intervals\nPulse - Controllable bursts of speed\nWalkSpeed - The classic mode of speed, usually detected on most games.'
+		Tooltip = 'Velocity - Uses smooth physics based movement\nImpulse - Same as velocity while using forces instead\nCFrame - Directly adjusts the position of the root\nTP - Large teleports within intervals\nPulse - Controllable bursts of speed\nWalkSpeed - The classic mode of speed, usually detected on most games.'
 	})
 	FloatMode = Fly:CreateDropdown({
 		Name = 'Float Mode',
-		List = {'Velocity', 'CFrame', 'Bounce', 'Floor', 'Jump', 'TP'},
+		List = {'Velocity', 'Impulse', 'CFrame', 'Bounce', 'Floor', 'Jump', 'TP'},
 		Function = function(val)
 			WallCheck.Object.Visible = Mode.Value == 'CFrame' or Mode.Value == 'TP' or val == 'CFrame' or val == 'TP'
 			BounceLength.Object.Visible = val == 'Bounce'
@@ -2539,7 +1917,7 @@ run(function()
 				Platform.Parent = Fly.Enabled and gameCamera or nil
 			end
 		end,
-		Tooltip = 'Velocity - Uses smooth physics based movement\nCFrame - Directly adjusts the position of the root\nTP - Teleports you to the ground within intervals\nFloor - Spawns a part under you\nJump - Presses space after going below a certain Y Level\nBounce - Vertical bouncing motion'
+		Tooltip = 'Velocity - Uses smooth physics based movement\nImpulse - Same as velocity while using forces instead\nCFrame - Directly adjusts the position of the root\nTP - Teleports you to the ground within intervals\nFloor - Spawns a part under you\nJump - Presses space after going below a certain Y Level\nBounce - Vertical bouncing motion'
 	})
 	local states = {'None'}
 	for _, v in Enum.HumanoidStateType:GetEnumItems() do
@@ -2693,15 +2071,23 @@ run(function()
 	
 	local function jump()
 		local state = entitylib.isAlive and entitylib.character.Humanoid:GetState() or nil
+	
 		if state == Enum.HumanoidStateType.Running or state == Enum.HumanoidStateType.Landed then
+			local root = entitylib.character.RootPart
+	
 			if Mode.Value == 'Velocity' then
 				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-				entitylib.character.RootPart.Velocity = Vector3.new(entitylib.character.RootPart.Velocity.X, Value.Value, entitylib.character.RootPart.Velocity.Z)
+				root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, Value.Value, root.AssemblyLinearVelocity.Z)
+			elseif Mode.Value == 'Impulse' then
+				entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+				task.delay(0, function()
+					root:ApplyImpulse(Vector3.new(0, Value.Value - root.AssemblyLinearVelocity.Y, 0) * root.AssemblyMass)
+				end)
 			else
 				local start = math.max(Value.Value - entitylib.character.Humanoid.JumpHeight, 0)
 				repeat
-					entitylib.character.RootPart.CFrame += Vector3.new(0, start * 0.016, 0)
-					start = start - (game.Workspace.Gravity * 0.016)
+					root.CFrame += Vector3.new(0, start * 0.016, 0)
+					start = start - (workspace.Gravity * 0.016)
 					if Mode.Value == 'CFrame' then
 						task.wait()
 					end
@@ -2726,15 +2112,15 @@ run(function()
 				end
 			end
 		end,
-		ExtraText = function() 
-			return Mode.Value 
+		ExtraText = function()
+			return Mode.Value
 		end,
 		Tooltip = 'Lets you jump higher'
 	})
 	Mode = HighJump:CreateDropdown({
 		Name = 'Mode',
-		List = {'Velocity', 'CFrame', 'Instant'},
-		Tooltip = 'Velocity - Uses smooth movement to boost you upward\nCFrame - Directly adjusts the position upward\nInstant - Teleports you to the peak of the jump'
+		List = {'Impulse', 'Velocity', 'CFrame', 'Instant'},
+		Tooltip = 'Velocity - Uses smooth movement to boost you upward\nImpulse - Same as velocity while using forces instead\nCFrame - Directly adjusts the position upward\nInstant - Teleports you to the peak of the jump'
 	})
 	Value = HighJump:CreateSlider({
 		Name = 'Velocity',
@@ -2802,7 +2188,7 @@ run(function()
 end)
 	
 run(function()
-	local Invisibility
+	local Invisible
 	local clone, oldroot, hip, valid
 	local animtrack
 	local proper = true
@@ -2811,8 +2197,8 @@ run(function()
 		if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
 			hip = entitylib.character.Humanoid.HipHeight
 			oldroot = entitylib.character.HumanoidRootPart
-			if not lplr.Character.Parent then 
-				return false 
+			if not lplr.Character.Parent then
+				return false
 			end
 	
 			lplr.Character.Parent = game
@@ -2824,15 +2210,15 @@ run(function()
 			lplr.Character.PrimaryPart = clone
 			entitylib.character.HumanoidRootPart = clone
 			entitylib.character.RootPart = clone
-			lplr.Character.Parent = game.Workspace
+			lplr.Character.Parent = workspace
 	
 			for _, v in lplr.Character:GetDescendants() do
 				if v:IsA('Weld') or v:IsA('Motor6D') then
-					if v.Part0 == oldroot then 
-						v.Part0 = clone 
+					if v.Part0 == oldroot then
+						v.Part0 = clone
 					end
-					if v.Part1 == oldroot then 
-						v.Part1 = clone 
+					if v.Part1 == oldroot then
+						v.Part1 = clone
 					end
 				end
 			end
@@ -2844,8 +2230,8 @@ run(function()
 	end
 	
 	local function revertClone()
-		if not oldroot or not oldroot:IsDescendantOf(game.Workspace) or not entitylib.isAlive then 
-			return false 
+		if not oldroot or not oldroot:IsDescendantOf(workspace) or not entitylib.isAlive then
+			return false
 		end
 	
 		lplr.Character.Parent = game
@@ -2853,16 +2239,16 @@ run(function()
 		lplr.Character.PrimaryPart = oldroot
 		entitylib.character.HumanoidRootPart = oldroot
 		entitylib.character.RootPart = oldroot
-		lplr.Character.Parent = game.Workspace
+		lplr.Character.Parent = workspace
 		oldroot.CanCollide = true
 	
 		for _, v in lplr.Character:GetDescendants() do
 			if v:IsA('Weld') or v:IsA('Motor6D') then
-				if v.Part0 == clone then 
-					v.Part0 = oldroot 
+				if v.Part0 == clone then
+					v.Part0 = oldroot
 				end
-				if v.Part1 == clone then 
-					v.Part1 = oldroot 
+				if v.Part1 == clone then
+					v.Part1 = oldroot
 				end
 			end
 		end
@@ -2879,7 +2265,7 @@ run(function()
 	end
 	
 	local function animationTrickery()
-		if entitylib.isAlive then 
+		if entitylib.isAlive then
 			local anim = Instance.new('Animation')
 			anim.AnimationId = 'http://www.roblox.com/asset/?id=18537363391'
 			animtrack = entitylib.character.Humanoid.Animator:LoadAnimation(anim)
@@ -2887,9 +2273,9 @@ run(function()
 			animtrack:Play(0, 1, 0)
 			anim:Destroy()
 			animtrack.Stopped:Connect(function()
-				if Invisibility.Enabled then 
+				if Invisible.Enabled then
 					animationTrickery()
-				end	
+				end
 			end)
 	
 			task.delay(0, function()
@@ -2901,29 +2287,29 @@ run(function()
 		end
 	end
 	
-	Invisibility = vape.Categories.Blatant:CreateModule({
-		Name = 'Invisibility',
+	Invisible = vape.Categories.Blatant:CreateModule({
+		Name = 'Invisible',
 		Function = function(callback)
-			if callback then 
+			if callback then
 				if not proper then
-					notif('Invisibility', 'Broken state detected', 3, 'alert')
-					Invisibility:Toggle()
+					notif('Invisible', 'Broken state detected', 3, 'alert')
+					Invisible:Toggle()
 					return
 				end
 	
 				success = doClone()
 				if not success then
-					Invisibility:Toggle()
+					Invisible:Toggle()
 					return
 				end
 	
 				animationTrickery()
-				Invisibility:Clean(runService.PreSimulation:Connect(function(dt)
+				Invisible:Clean(runService.PreSimulation:Connect(function(dt)
 					if entitylib.isAlive and oldroot then
 						local root = entitylib.character.RootPart
 						local cf = root.CFrame - Vector3.new(0, entitylib.character.Humanoid.HipHeight + (root.Size.Y / 2) - 1, 0)
 	
-						if isnetworkowner and not isnetworkowner(oldroot) then 
+						if not isnetworkowner(oldroot) then
 							root.CFrame = oldroot.CFrame
 							root.Velocity = oldroot.Velocity
 							return
@@ -2931,27 +2317,28 @@ run(function()
 	
 						oldroot.CFrame = cf * CFrame.Angles(math.rad(180), 0, 0)
 						oldroot.Velocity = root.Velocity
+						oldroot.CanCollide = false
 					end
 				end))
 	
-				Invisibility:Clean(entitylib.Events.LocalAdded:Connect(function(char)
+				Invisible:Clean(entitylib.Events.LocalAdded:Connect(function(char)
 					local animator = char.Humanoid:WaitForChild('Animator', 1)
-					if animator and Invisibility.Enabled then 
+					if animator and Invisible.Enabled then
 						oldroot = nil
-						Invisibility:Toggle()
-						Invisibility:Toggle()
+						Invisible:Toggle()
+						Invisible:Toggle()
 					end
 				end))
 			else
-				if animtrack then 
+				if animtrack then
 					animtrack:Stop()
 					animtrack:Destroy()
 				end
-				
+	
 				if success and clone and oldroot and proper then
 					proper = true
-					if oldroot and clone then 
-						revertClone() 
+					if oldroot and clone then
+						revertClone()
 					end
 				end
 			end
@@ -2985,7 +2372,7 @@ run(function()
 		if Mouse.Enabled then
 			if not inputService:IsMouseButtonPressed(0) then return false end
 		end
-		
+	
 		local tool = getTool()
 		return tool and tool:FindFirstChildWhichIsA('TouchTransmitter', true) or nil, tool
 	end
@@ -3015,13 +2402,13 @@ run(function()
 								local delta = (v.RootPart.Position - selfpos)
 								local angle = math.acos(localfacing:Dot((delta * Vector3.new(1, 0, 1)).Unit))
 								if angle > (math.rad(AngleSlider.Value) / 2) then continue end
-								
+	
 								table.insert(attacked, {
 									Entity = v,
 									Check = delta.Magnitude > AttackRange.Value and BoxSwingColor or BoxAttackColor
 								})
 								targetinfo.Targets[v] = tick() + 1
-								
+	
 								if AttackDelay < tick() then
 									AttackDelay = tick() + (1 / CPS.GetRandomValue())
 									tool:Activate()
@@ -3029,9 +2416,9 @@ run(function()
 	
 								if Lunge.Enabled and tool.GripUp.X == 0 then break end
 								if delta.Magnitude > AttackRange.Value then continue end
-								
+	
 								Overlay.FilterDescendantsInstances = {v.Character}
-								for _, part in game.Workspace:GetPartBoundsInBox(v.RootPart.CFrame, Vector3.new(4, 4, 4), Overlay) do
+								for _, part in workspace:GetPartBoundsInBox(v.RootPart.CFrame, Vector3.new(4, 4, 4), Overlay) do
 									firetouchinterest(interest.Parent, part, 1)
 									firetouchinterest(interest.Parent, part, 0)
 								end
@@ -3054,7 +2441,7 @@ run(function()
 	
 					if Face.Enabled and attacked[1] then
 						local vec = attacked[1].Entity.RootPart.Position * Vector3.new(1, 0, 1)
-						entitylib.character.RootPart.CFrame = CFrame.lookAt(entitylib.character.RootPart.Position, Vector3.new(vec.X, entitylib.character.RootPart.Position.Y, vec.Z))
+						entitylib.character.RootPart.CFrame = CFrame.lookAt(entitylib.character.RootPart.Position, Vector3.new(vec.X, entitylib.character.RootPart.Position.Y + 0.01, vec.Z))
 					end
 	
 					task.wait()
@@ -3182,8 +2569,8 @@ run(function()
 					Particles[i] = part
 				end
 			else
-				for _, v in Particles do 
-					v:Destroy() 
+				for _, v in Particles do
+					v:Destroy()
 				end
 				table.clear(Particles)
 			end
@@ -3266,24 +2653,30 @@ run(function()
 						end
 	
 						local root = entitylib.character.RootPart
+						local dir = entitylib.character.Humanoid.MoveDirection * Value.Value
 						if Mode.Value == 'Velocity' then
-							root.AssemblyLinearVelocity = (entitylib.character.Humanoid.MoveDirection * Value.Value) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+							root.AssemblyLinearVelocity = dir + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+						elseif Mode.Value == 'Impulse' then
+							local diff = (dir - root.AssemblyLinearVelocity) * Vector3.new(1, 0, 1)
+							if diff.Magnitude > (dir == Vector3.zero and 10 or 2) then
+								root:ApplyImpulse(diff * root.AssemblyMass)
+							end
 						else
-							root.CFrame += (entitylib.character.Humanoid.MoveDirection * Value.Value * dt)
+							root.CFrame += dir * dt
 						end
 					end
 				end))
 			end
 		end,
-		ExtraText = function() 
-			return Mode.Value 
+		ExtraText = function()
+			return Mode.Value
 		end,
 		Tooltip = 'Lets you jump farther'
 	})
 	Mode = LongJump:CreateDropdown({
 		Name = 'Mode',
-		List = {'Velocity', 'CFrame'},
-		Tooltip = 'Velocity - Uses smooth physics based movement\nCFrame - Directly adjusts the position of the root'
+		List = {'Velocity', 'Impulse', 'CFrame'},
+		Tooltip = 'Velocity - Uses smooth physics based movement\nImpulse - Same as velocity while using forces instead\nCFrame - Directly adjusts the position of the root'
 	})
 	Value = LongJump:CreateSlider({
 		Name = 'Speed',
@@ -3330,7 +2723,7 @@ run(function()
 				if Mode.Value == 'Mouse' then
 					local ray = cloneref(lplr:GetMouse()).UnitRay
 					rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
-					ray = game.Workspace:Raycast(ray.Origin, ray.Direction * 10000, rayCheck)
+					ray = workspace:Raycast(ray.Origin, ray.Direction * 10000, rayCheck)
 					position = ray and ray.Position + Vector3.new(0, entitylib.character.HipHeight or 2, 0)
 				elseif Mode.Value == 'Waypoint' then
 					local waypoint = getWaypointInMouse()
@@ -3350,18 +2743,22 @@ run(function()
 					return
 				end
 	
-				if MovementMode.Value == 'Normal' then
-					if entitylib.isAlive then
-						entitylib.character.RootPart.CFrame = CFrame.lookAlong(position, entitylib.character.RootPart.CFrame.LookVector)
-					end
+				if MovementMode.Value ~= 'Lerp' then
 					MouseTP:Toggle()
+					if entitylib.isAlive then
+						if MovementMode.Value == 'Motor' then
+							motorMove(entitylib.character.RootPart, CFrame.lookAlong(position, entitylib.character.RootPart.CFrame.LookVector))
+						else
+							entitylib.character.RootPart.CFrame = CFrame.lookAlong(position, entitylib.character.RootPart.CFrame.LookVector)
+						end
+					end
 				else
 					MouseTP:Clean(runService.Heartbeat:Connect(function()
 						if entitylib.isAlive then
 							entitylib.character.RootPart.Velocity = Vector3.zero
 						end
 					end))
-					
+	
 					repeat
 						if entitylib.isAlive then
 							local direction = CFrame.lookAt(entitylib.character.RootPart.Position, position).LookVector * math.min((entitylib.character.RootPart.Position - position).Magnitude, Length.Value)
@@ -3373,6 +2770,7 @@ run(function()
 							MouseTP:Toggle()
 							notif('MouseTP', 'Character missing', 5, 'warning')
 						end
+	
 						task.wait(Delay.Value)
 					until not MouseTP.Enabled
 				end
@@ -3386,7 +2784,7 @@ run(function()
 	})
 	MovementMode = MouseTP:CreateDropdown({
 		Name = 'Movement',
-		List = {'Normal', 'Lerp'},
+		List = {'CFrame', 'Motor', 'Lerp'},
 		Function = function(val)
 			Length.Object.Visible = val == 'Lerp'
 			Delay.Object.Visible = val == 'Lerp'
@@ -3423,6 +2821,7 @@ run(function()
 	local overlapCheck = OverlapParams.new()
 	overlapCheck.MaxParts = 9e9
 	local modified, fflag = {}
+	local teleported
 	
 	local function grabClosestNormal(ray)
 		local partCF, mag, closest = ray.Instance.CFrame, 0, Enum.NormalId.Top
@@ -3438,12 +2837,12 @@ run(function()
 	local Functions = {
 		Part = function()
 			local chars = {gameCamera, lplr.Character}
-			for _, v in entitylib.List do 
-				table.insert(chars, v.Character) 
+			for _, v in entitylib.List do
+				table.insert(chars, v.Character)
 			end
 			overlapCheck.FilterDescendantsInstances = chars
 	
-			local parts = game.Workspace:GetPartBoundsInBox(entitylib.character.RootPart.CFrame + Vector3.new(0, 1, 0), entitylib.character.RootPart.Size + Vector3.new(1, entitylib.character.HipHeight, 1), overlapCheck)
+			local parts = workspace:GetPartBoundsInBox(entitylib.character.RootPart.CFrame + Vector3.new(0, 1, 0), entitylib.character.RootPart.Size + Vector3.new(1, entitylib.character.HipHeight, 1), overlapCheck)
 			for _, part in parts do
 				if part.CanCollide and (not Spider.Enabled or SpiderShift) then
 					modified[part] = true
@@ -3466,30 +2865,38 @@ run(function()
 				end
 			end
 		end,
-		TP = function()
+		CFrame = function()
 			local chars = {gameCamera, lplr.Character}
 			for _, v in entitylib.List do
 				table.insert(chars, v.Character)
 			end
 			rayCheck.FilterDescendantsInstances = chars
 			overlapCheck.FilterDescendantsInstances = chars
-			
-			local ray = game.Workspace:Raycast(entitylib.character.Head.CFrame.Position, entitylib.character.Humanoid.MoveDirection * 1.1, rayCheck)
+	
+			local ray = workspace:Raycast(entitylib.character.Head.CFrame.Position, entitylib.character.Humanoid.MoveDirection * 1.1, rayCheck)
 			if ray and (not Spider.Enabled or SpiderShift) then
 				local phaseDirection = grabClosestNormal(ray)
 				if ray.Instance.Size[phaseDirection] <= StudLimit.Value then
-					local dest = entitylib.character.RootPart.CFrame + (ray.Normal * (-(ray.Instance.Size[phaseDirection]) - (entitylib.character.RootPart.Size.X / 1.5)))
-					if #game.Workspace:GetPartBoundsInBox(dest, Vector3.one, overlapCheck) <= 0 then
-						entitylib.character.RootPart.CFrame = dest
+					local root = entitylib.character.RootPart
+					local dest = root.CFrame + (ray.Normal * (-(ray.Instance.Size[phaseDirection]) - (root.Size.X / 1.5)))
+	
+					if #workspace:GetPartBoundsInBox(dest, Vector3.one, overlapCheck) <= 0 then
+						if Mode.Value == 'Motor' then
+							motorMove(root, dest)
+						else
+							root.CFrame = dest
+						end
 					end
 				end
 			end
 		end,
 		FFlag = function()
+			if teleported then return end
 			setfflag('AssemblyExtentsExpansionStudHundredth', '-10000')
 			fflag = true
 		end
 	}
+	Functions.Motor = Functions.CFrame
 	
 	Phase = vape.Categories.Blatant:CreateModule({
 		Name = 'Phase',
@@ -3500,6 +2907,13 @@ run(function()
 						Functions[Mode.Value]()
 					end
 				end))
+	
+				if Mode.Value == 'FFlag' then
+					Phase:Clean(lplr.OnTeleport:Connect(function()
+						teleported = true
+						setfflag('AssemblyExtentsExpansionStudHundredth', '30')
+					end))
+				end
 			else
 				if fflag then
 					setfflag('AssemblyExtentsExpansionStudHundredth', '30')
@@ -3515,9 +2929,9 @@ run(function()
 	})
 	Mode = Phase:CreateDropdown({
 		Name = 'Mode',
-		List = {'Part', 'Character', 'TP', 'FFlag'},
+		List = {'Part', 'Character', 'CFrame', 'Motor', 'FFlag'},
 		Function = function(val)
-			StudLimit.Object.Visible = val == 'TP'
+			StudLimit.Object.Visible = val == 'CFrame' or val == 'Motor'
 			if fflag then
 				setfflag('AssemblyExtentsExpansionStudHundredth', '30')
 			end
@@ -3527,7 +2941,7 @@ run(function()
 			table.clear(modified)
 			fflag = nil
 		end,
-		Tooltip = 'Part - Modifies parts collision status around you\nCharacter - Modifies the local collision status of the character\nTP - Teleports you past parts\nFFlag - Directly adjusts all physics collisions'
+		Tooltip = 'Part - Modifies parts collision status around you\nCharacter - Modifies the local collision status of the character\nCFrame - Teleports you past parts\nMotor - Same as CFrame with a bypass\nFFlag - Directly adjusts all physics collisions'
 	})
 	StudLimit = Phase:CreateSlider({
 		Name = 'Wall Size',
@@ -3561,6 +2975,7 @@ run(function()
 					if entitylib.isAlive and not Fly.Enabled and not LongJump.Enabled then
 						local state = entitylib.character.Humanoid:GetState()
 						if state == Enum.HumanoidStateType.Climbing then return end
+	
 						local movevec = TargetStrafeVector or Options.MoveMethod.Value == 'Direct' and calculateMoveVector(Vector3.new(a + d, 0, w + s)) or entitylib.character.Humanoid.MoveDirection
 						SpeedMethods[Mode.Value](Options, movevec, dt)
 						if AutoJump.Enabled and entitylib.character.Humanoid.FloorMaterial ~= Enum.Material.Air and movevec ~= Vector3.zero then
@@ -3615,7 +3030,7 @@ run(function()
 				Speed:Toggle()
 			end
 		end,
-		Tooltip = 'Velocity - Uses smooth physics based movement\nCFrame - Directly adjusts the position of the root\nTP - Large teleports within intervals\nPulse - Controllable bursts of speed\nWalkSpeed - The classic mode of speed, usually detected on most games.'
+		Tooltip = 'Velocity - Uses smooth physics based movement\nImpulse - Same as velocity while using forces instead\nCFrame - Directly adjusts the position of the root\nTP - Large teleports within intervals\nPulse - Controllable bursts of speed\nWalkSpeed - The classic mode of speed, usually detected on most games.'
 	})
 	Options = {
 		MoveMethod = Speed:CreateDropdown({
@@ -3736,7 +3151,7 @@ run(function()
 	
 						if Mode.Value ~= 'Part' then
 							local vec = entitylib.character.Humanoid.MoveDirection * 2.5
-							local ray = game.Workspace:Raycast(root.Position - Vector3.new(0, entitylib.character.HipHeight - 0.5, 0), vec, rayCheck)
+							local ray = workspace:Raycast(root.Position - Vector3.new(0, entitylib.character.HipHeight - 0.5, 0), vec, rayCheck)
 							if Active and not ray then
 								root.Velocity = Vector3.new(root.Velocity.X, 0, root.Velocity.Z)
 							end
@@ -3747,16 +3162,19 @@ run(function()
 									if State.Enabled then
 										entitylib.character.Humanoid:ChangeState(Enum.HumanoidStateType.Climbing)
 									end
-									entitylib.character.RootPart.Velocity *= Vector3.new(1, 0, 1)
+	
+									root.Velocity *= Vector3.new(1, 0, 1)
 									if Mode.Value == 'CFrame' then
-										entitylib.character.RootPart.CFrame += Vector3.new(0, Value.Value * dt, 0)
+										root.CFrame += Vector3.new(0, Value.Value * dt, 0)
+									elseif Mode.Value == 'Impulse' then
+										root:ApplyImpulse(Vector3.new(0, Value.Value, 0) * root.AssemblyMass)
 									else
-										entitylib.character.RootPart.Velocity += Vector3.new(0, Value.Value, 0)
+										root.Velocity += Vector3.new(0, Value.Value, 0)
 									end
 								end
 							end
 						else
-							local ray = game.Workspace:Raycast(root.Position - Vector3.new(0, entitylib.character.HipHeight - 0.5, 0), entitylib.character.RootPart.CFrame.LookVector * 2, rayCheck)
+							local ray = workspace:Raycast(root.Position - Vector3.new(0, entitylib.character.HipHeight - 0.5, 0), entitylib.character.RootPart.CFrame.LookVector * 2, rayCheck)
 							if ray and (not Phase.Enabled or not SpiderShift) then
 								Truss.Position = ray.Position - ray.Normal * 0.9 or Vector3.zero
 							else
@@ -3776,7 +3194,7 @@ run(function()
 	})
 	Mode = Spider:CreateDropdown({
 		Name = 'Mode',
-		List = {'Velocity', 'CFrame', 'Part'},
+		List = {'Velocity', 'Impulse', 'CFrame', 'Part'},
 		Function = function(val)
 			Value.Object.Visible = val ~= 'Part'
 			State.Object.Visible = val ~= 'Part'
@@ -3877,6 +3295,42 @@ run(function()
 end)
 	
 run(function()
+	local Swim
+	local terrain = cloneref(workspace:FindFirstChildWhichIsA('Terrain'))
+	local lastpos = Region3.new(Vector3.zero, Vector3.zero)
+	
+	Swim = vape.Categories.Blatant:CreateModule({
+		Name = 'Swim',
+		Function = function(callback)
+			if callback then
+				Swim:Clean(runService.PreSimulation:Connect(function(dt)
+					if entitylib.isAlive then
+						local root = entitylib.character.RootPart
+						local moving = entitylib.character.Humanoid.MoveDirection ~= Vector3.zero
+						local rootvelo = root.Velocity
+						local space = inputService:IsKeyDown(Enum.KeyCode.Space)
+	
+						if terrain then
+							local factor = (moving or space) and Vector3.new(6, 6, 6) or Vector3.new(2, 1, 2)
+							local pos = root.Position - Vector3.new(0, 1, 0)
+							local newpos = Region3.new(pos - factor, pos + factor):ExpandToGrid(4)
+							terrain:ReplaceMaterial(lastpos, 4, Enum.Material.Water, Enum.Material.Air)
+							terrain:FillRegion(newpos, 4, Enum.Material.Water)
+							lastpos = newpos
+						end
+					end
+				end))
+			else
+				if terrain and lastpos then
+					terrain:ReplaceMaterial(lastpos, 4, Enum.Material.Water, Enum.Material.Air)
+				end
+			end
+		end,
+		Tooltip = 'Lets you swim midair'
+	})
+end)
+	
+run(function()
 	local TargetStrafe
 	local Targets
 	local SearchRange
@@ -3914,7 +3368,7 @@ run(function()
 						rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera, ent.Character}
 						rayCheck.CollisionGroup = root.CollisionGroup
 	
-						if flymod.Enabled or game.Workspace:Raycast(targetPos, Vector3.new(0, -70, 0), rayCheck) then
+						if flymod.Enabled or workspace:Raycast(targetPos, Vector3.new(0, -70, 0), rayCheck) then
 							local factor, localPosition = 0, root.Position
 							if ent ~= oldent then
 								ang = math.deg(select(2, CFrame.lookAt(targetPos, localPosition):ToEulerAnglesYXZ()))
@@ -3924,11 +3378,11 @@ run(function()
 							local newPos = entityPos + (CFrame.Angles(0, math.rad(ang), 0).LookVector * (StrafeRange.Value - yFactor))
 							local startRay, endRay = entityPos, newPos
 	
-							if not wallcheck and game.Workspace:Raycast(targetPos, (localPosition - targetPos), rayCheck) then
+							if not wallcheck and workspace:Raycast(targetPos, (localPosition - targetPos), rayCheck) then
 								startRay, endRay = entityPos + (CFrame.Angles(0, math.rad(ang), 0).LookVector * (entityPos - localPosition).Magnitude), entityPos
 							end
 	
-							local ray = game.Workspace:Blockcast(CFrame.new(startRay), Vector3.new(1, entitylib.character.HipHeight + (root.Size.Y / 2), 1), (endRay - startRay), rayCheck)
+							local ray = workspace:Blockcast(CFrame.new(startRay), Vector3.new(1, entitylib.character.HipHeight + (root.Size.Y / 2), 1), (endRay - startRay), rayCheck)
 							if (localPosition - newPos).Magnitude < 3 or ray then
 								factor = (8 - math.min((localPosition - newPos).Magnitude, 3))
 								if ray then
@@ -3937,7 +3391,7 @@ run(function()
 								end
 							end
 	
-							if not flymod.Enabled and not game.Workspace:Raycast(newPos, Vector3.new(0, -70, 0), rayCheck) then
+							if not flymod.Enabled and not workspace:Raycast(newPos, Vector3.new(0, -70, 0), rayCheck) then
 								newPos = entityPos
 								factor = 40
 							end
@@ -3995,36 +3449,34 @@ run(function()
 	})
 end)
 	
-if setfflag ~= nil and type(setfflag) == "function" then
-	run(function()
-		local Timer
-		local Value
-		
-		Timer = vape.Categories.Blatant:CreateModule({
-			Name = 'Timer',
-			Function = function(callback)
-				if callback then
-					setfflag('SimEnableStepPhysics', 'True')
-					setfflag('SimEnableStepPhysicsSelective', 'True')
-					Timer:Clean(runService.RenderStepped:Connect(function(dt)
-						if Value.Value > 1 then
-							runService:Pause()
-							game.Workspace:StepPhysics(dt * (Value.Value - 1), {entitylib.character.RootPart})
-							runService:Run()
-						end
-					end))
-				end
-			end,
-			Tooltip = 'Change the game speed.'
-		})
-		Value = Timer:CreateSlider({
-			Name = 'Value',
-			Min = 1,
-			Max = 3,
-			Decimal = 10
-		})
-	end)
-end
+run(function()
+	local Timer
+	local Value
+	
+	Timer = vape.Categories.Blatant:CreateModule({
+		Name = 'Timer',
+		Function = function(callback)
+			if callback then
+				setfflag('SimEnableStepPhysics', 'True')
+				setfflag('SimEnableStepPhysicsSelective', 'True')
+				Timer:Clean(runService.RenderStepped:Connect(function(dt)
+					if Value.Value > 1 then
+						runService:Pause()
+						workspace:StepPhysics(dt * (Value.Value - 1), {entitylib.character.RootPart})
+						runService:Run()
+					end
+				end))
+			end
+		end,
+		Tooltip = 'Change the game speed.'
+	})
+	Value = Timer:CreateSlider({
+		Name = 'Value',
+		Min = 1,
+		Max = 3,
+		Decimal = 10
+	})
+end)
 	
 run(function()
 	local Arrows
@@ -4044,17 +3496,18 @@ run(function()
 		if vape.ThreadFix then
 			setthreadidentity(8)
 		end
-		local EntityArrow = Instance.new('ImageLabel')
-		EntityArrow.Size = UDim2.fromOffset(256, 256)
-		EntityArrow.Position = UDim2.fromScale(0.5, 0.5)
-		EntityArrow.AnchorPoint = Vector2.new(0.5, 0.5)
-		EntityArrow.BackgroundTransparency = 1
-		EntityArrow.BorderSizePixel = 0
-		EntityArrow.Visible = false
-		EntityArrow.Image = getcustomasset('vape/assets/new/arrowmodule.png')
-		EntityArrow.ImageColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
-		EntityArrow.Parent = Folder
-		Reference[ent] = EntityArrow
+	
+		local arrow = Instance.new('ImageLabel')
+		arrow.Size = UDim2.fromOffset(256, 256)
+		arrow.Position = UDim2.fromScale(0.5, 0.5)
+		arrow.AnchorPoint = Vector2.new(0.5, 0.5)
+		arrow.BackgroundTransparency = 1
+		arrow.BorderSizePixel = 0
+		arrow.Visible = false
+		arrow.Image = getcustomasset('newvape/assets/new/arrowmodule.png')
+		arrow.ImageColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+		arrow.Parent = Folder
+		Reference[ent] = arrow
 	end
 	
 	local function Removed(ent)
@@ -4076,21 +3529,21 @@ run(function()
 	end
 	
 	local function Loop()
-		for ent, EntityArrow in Reference do
+		for ent, arrow in Reference do
 			if Distance.Enabled then
 				local distance = entitylib.isAlive and (entitylib.character.RootPart.Position - ent.RootPart.Position).Magnitude or math.huge
 				if distance < DistanceLimit.ValueMin or distance > DistanceLimit.ValueMax then
-					EntityArrow.Visible = false
+					arrow.Visible = false
 					continue
 				end
 			end
 	
 			local _, rootVis = gameCamera:WorldToScreenPoint(ent.RootPart.Position)
-			EntityArrow.Visible = not rootVis
+			arrow.Visible = not rootVis
 			if rootVis then continue end
-			
-			local dir = (gameCamera.CFrame:PointToObjectSpace(ent.RootPart.Position) * Vector3.new(1, 0, 1)).Unit
-			EntityArrow.Rotation = math.deg(math.atan2(dir.Z, dir.X))
+	
+			local dir = CFrame.lookAlong(gameCamera.CFrame.Position, gameCamera.CFrame.LookVector * Vector3.new(1, 0, 1)):PointToObjectSpace(ent.RootPart.Position)
+			arrow.Rotation = math.deg(math.atan2(dir.Z, dir.X))
 		end
 	end
 	
@@ -4185,6 +3638,7 @@ run(function()
 		if vape.ThreadFix then
 			setthreadidentity(8)
 		end
+	
 		if Mode.Value == 'Highlight' then
 			local cham = Instance.new('Highlight')
 			cham.Adornee = ent.Character
@@ -4932,212 +4386,198 @@ run(function()
 		Name = 'GamingChair',
 		Function = function(callback)
 			if callback then
-				local suc, err = pcall(function()
-					if vape.ThreadFix then
-						setthreadidentity(8)
-					end
-					chair = Instance.new('MeshPart')
-					chair.Color = Color3.fromRGB(21, 21, 21)
-					chair.Size = Vector3.new(2.16, 3.6, 2.3) / Vector3.new(12.37, 20.636, 13.071)
-					chair.CanCollide = false
-					chair.Massless = true
-					chair.MeshId = 'rbxassetid://12972961089'
-					chair.Material = Enum.Material.SmoothPlastic
-					chair.Parent = game.Workspace
-					movingsound = Instance.new('Sound')
-					--movingsound.SoundId = downloadVapeAsset('vape/assets/ChairRolling.mp3')
-					movingsound.Volume = 0.4
-					movingsound.Looped = true
-					movingsound.Parent = game.Workspace
-					flyingsound = Instance.new('Sound')
-					--flyingsound.SoundId = downloadVapeAsset('vape/assets/ChairFlying.mp3')
-					flyingsound.Volume = 0.4
-					flyingsound.Looped = true
-					flyingsound.Parent = game.Workspace
-					local chairweld = Instance.new('WeldConstraint')
-					chairweld.Part0 = chair
-					chairweld.Parent = chair
-					if entitylib.isAlive then
+				if vape.ThreadFix then
+					setthreadidentity(8)
+				end
+				chair = Instance.new('MeshPart')
+				chair.Color = Color3.fromRGB(21, 21, 21)
+				chair.Size = Vector3.new(2.16, 3.6, 2.3) / Vector3.new(12.37, 20.636, 13.071)
+				chair.CanCollide = false
+				chair.Massless = true
+				chair.MeshId = 'rbxassetid://12972961089'
+				chair.Material = Enum.Material.SmoothPlastic
+				chair.Parent = workspace
+				movingsound = Instance.new('Sound')
+				--movingsound.SoundId = downloadVapeAsset('vape/assets/ChairRolling.mp3')
+				movingsound.Volume = 0.4
+				movingsound.Looped = true
+				movingsound.Parent = workspace
+				flyingsound = Instance.new('Sound')
+				--flyingsound.SoundId = downloadVapeAsset('vape/assets/ChairFlying.mp3')
+				flyingsound.Volume = 0.4
+				flyingsound.Looped = true
+				flyingsound.Parent = workspace
+				local chairweld = Instance.new('WeldConstraint')
+				chairweld.Part0 = chair
+				chairweld.Parent = chair
+				if entitylib.isAlive then
+					chair.CFrame = entitylib.character.RootPart.CFrame * CFrame.Angles(0, math.rad(-90), 0)
+					chairweld.Part1 = entitylib.character.RootPart
+				end
+				chairhighlight = Instance.new('Highlight')
+				chairhighlight.FillTransparency = 1
+				chairhighlight.OutlineColor = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+				chairhighlight.DepthMode = Enum.HighlightDepthMode.Occluded
+				chairhighlight.OutlineTransparency = 0.2
+				chairhighlight.Parent = chair
+				local chairarms = Instance.new('MeshPart')
+				chairarms.Color = chair.Color
+				chairarms.Size = Vector3.new(1.39, 1.345, 2.75) / Vector3.new(97.13, 136.216, 234.031)
+				chairarms.CFrame = chair.CFrame * CFrame.new(-0.169, -1.129, -0.013)
+				chairarms.MeshId = 'rbxassetid://12972673898'
+				chairarms.CanCollide = false
+				chairarms.Parent = chair
+				local chairarmsweld = Instance.new('WeldConstraint')
+				chairarmsweld.Part0 = chairarms
+				chairarmsweld.Part1 = chair
+				chairarmsweld.Parent = chair
+				local chairlegs = Instance.new('MeshPart')
+				chairlegs.Color = chair.Color
+				chairlegs.Name = 'Legs'
+				chairlegs.Size = Vector3.new(1.8, 1.2, 1.8) / Vector3.new(10.432, 8.105, 9.488)
+				chairlegs.CFrame = chair.CFrame * CFrame.new(0.047, -2.324, 0)
+				chairlegs.MeshId = 'rbxassetid://13003181606'
+				chairlegs.CanCollide = false
+				chairlegs.Parent = chair
+				local chairfan = Instance.new('MeshPart')
+				chairfan.Color = chair.Color
+				chairfan.Name = 'Fan'
+				chairfan.Size = Vector3.zero
+				chairfan.CFrame = chair.CFrame * CFrame.new(0, -1.873, 0)
+				chairfan.MeshId = 'rbxassetid://13004977292'
+				chairfan.CanCollide = false
+				chairfan.Parent = chair
+				local trails = {}
+				for _, v in wheelpositions do
+					local attachment = Instance.new('Attachment')
+					attachment.Position = v
+					attachment.Parent = chairlegs
+					local attachment2 = Instance.new('Attachment')
+					attachment2.Position = v + Vector3.new(0, 0, 0.18)
+					attachment2.Parent = chairlegs
+					local trail = Instance.new('Trail')
+					trail.Texture = 'http://www.roblox.com/asset/?id=13005168530'
+					trail.TextureMode = Enum.TextureMode.Static
+					trail.Transparency = NumberSequence.new(0.5)
+					trail.Color = ColorSequence.new(Color3.new(0.5, 0.5, 0.5))
+					trail.Attachment0 = attachment
+					trail.Attachment1 = attachment2
+					trail.Lifetime = 20
+					trail.MaxLength = 60
+					trail.MinLength = 0.1
+					trail.Parent = chairlegs
+					table.insert(trails, trail)
+				end
+				GamingChair:Clean(chair)
+				GamingChair:Clean(movingsound)
+				GamingChair:Clean(flyingsound)
+				chairanim = {Stop = function() end}
+				local oldmoving = false
+				local oldflying = false
+				repeat
+					if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
+						if not chairanim.IsPlaying then
+							local temp2 = Instance.new('Animation')
+							temp2.AnimationId = entitylib.character.Humanoid.RigType == Enum.HumanoidRigType.R15 and 'http://www.roblox.com/asset/?id=2506281703' or 'http://www.roblox.com/asset/?id=178130996'
+							chairanim = entitylib.character.Humanoid:LoadAnimation(temp2)
+							chairanim.Priority = Enum.AnimationPriority.Movement
+							chairanim.Looped = true
+							chairanim:Play()
+						end
 						chair.CFrame = entitylib.character.RootPart.CFrame * CFrame.Angles(0, math.rad(-90), 0)
 						chairweld.Part1 = entitylib.character.RootPart
-					end
-					chairhighlight = Instance.new('Highlight')
-					chairhighlight.FillTransparency = 1
-					chairhighlight.OutlineColor = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
-					chairhighlight.DepthMode = Enum.HighlightDepthMode.Occluded
-					chairhighlight.OutlineTransparency = 0.2
-					chairhighlight.Parent = chair
-					local chairarms = Instance.new('MeshPart')
-					chairarms.Color = chair.Color
-					chairarms.Size = Vector3.new(1.39, 1.345, 2.75) / Vector3.new(97.13, 136.216, 234.031)
-					chairarms.CFrame = chair.CFrame * CFrame.new(-0.169, -1.129, -0.013)
-					chairarms.MeshId = 'rbxassetid://12972673898'
-					chairarms.CanCollide = false
-					chairarms.Parent = chair
-					local chairarmsweld = Instance.new('WeldConstraint')
-					chairarmsweld.Part0 = chairarms
-					chairarmsweld.Part1 = chair
-					chairarmsweld.Parent = chair
-					local chairlegs = Instance.new('MeshPart')
-					chairlegs.Color = chair.Color
-					chairlegs.Name = 'Legs'
-					chairlegs.Size = Vector3.new(1.8, 1.2, 1.8) / Vector3.new(10.432, 8.105, 9.488)
-					chairlegs.CFrame = chair.CFrame * CFrame.new(0.047, -2.324, 0)
-					chairlegs.MeshId = 'rbxassetid://13003181606'
-					chairlegs.CanCollide = false
-					chairlegs.Parent = chair
-					local chairfan = Instance.new('MeshPart')
-					chairfan.Color = chair.Color
-					chairfan.Name = 'Fan'
-					chairfan.Size = Vector3.zero
-					chairfan.CFrame = chair.CFrame * CFrame.new(0, -1.873, 0)
-					chairfan.MeshId = 'rbxassetid://13004977292'
-					chairfan.CanCollide = false
-					chairfan.Parent = chair
-					local trails = {}
-					for _, v in wheelpositions do
-						local attachment = Instance.new('Attachment')
-						attachment.Position = v
-						attachment.Parent = chairlegs
-						local attachment2 = Instance.new('Attachment')
-						attachment2.Position = v + Vector3.new(0, 0, 0.18)
-						attachment2.Parent = chairlegs
-						local trail = Instance.new('Trail')
-						trail.Texture = 'http://www.roblox.com/asset/?id=13005168530'
-						trail.TextureMode = Enum.TextureMode.Static
-						trail.Transparency = NumberSequence.new(0.5)
-						trail.Color = ColorSequence.new(Color3.new(0.5, 0.5, 0.5))
-						trail.Attachment0 = attachment
-						trail.Attachment1 = attachment2
-						trail.Lifetime = 20
-						trail.MaxLength = 60
-						trail.MinLength = 0.1
-						trail.Parent = chairlegs
-						table.insert(trails, trail)
-					end
-					GamingChair:Clean(chair)
-					GamingChair:Clean(movingsound)
-					GamingChair:Clean(flyingsound)
-					chairanim = {Stop = function() end}
-					local oldmoving = false
-					local oldflying = false
-					repeat
-						if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
-							if not chairanim.IsPlaying then
-								local temp2 = Instance.new('Animation')
-								temp2.AnimationId = entitylib.character.Humanoid.RigType == Enum.HumanoidRigType.R15 and 'http://www.roblox.com/asset/?id=2506281703' or 'http://www.roblox.com/asset/?id=178130996'
-								chairanim = entitylib.character.Humanoid:LoadAnimation(temp2)
-								chairanim.Priority = Enum.AnimationPriority.Movement
-								chairanim.Looped = true
-								chairanim:Play()
-							end
-							chair.CFrame = entitylib.character.RootPart.CFrame * CFrame.Angles(0, math.rad(-90), 0)
-							chairweld.Part1 = entitylib.character.RootPart
-							chairlegs.Velocity = Vector3.zero
-							chairlegs.CFrame = chair.CFrame * CFrame.new(0.047, -2.324, 0)
-							chairfan.Velocity = Vector3.zero
-							chairfan.CFrame = chair.CFrame * CFrame.new(0.047, -1.873, 0) * CFrame.Angles(0, math.rad(tick() * 180 % 360), math.rad(180))
-							local moving = entitylib.character.Humanoid:GetState() == Enum.HumanoidStateType.Running and entitylib.character.Humanoid.MoveDirection ~= Vector3.zero
-							local flying = vape.Modules.Fly and vape.Modules.Fly.Enabled or vape.Modules.LongJump and vape.Modules.LongJump.Enabled or vape.Modules.InfiniteFly and vape.Modules.InfiniteFly.Enabled
-							if movingsound.TimePosition > 1.9 then
-								movingsound.TimePosition = 0.2
-							end
-							movingsound.PlaybackSpeed = (entitylib.character.RootPart.Velocity * Vector3.new(1, 0, 1)).Magnitude / 16
-							for _, v in trails do
-								v.Enabled = not flying and moving
-								v.Color = ColorSequence.new(movingsound.PlaybackSpeed > 1.5 and Color3.new(1, 0.5, 0) or Color3.new())
-							end
-							if moving ~= oldmoving then
-								if movingsound.IsPlaying then
-									if not moving then
-										movingsound:Stop()
-									end
-								else
-									if not flying and moving then
-										movingsound:Play()
-									end
-								end
-								oldmoving = moving
-							end
-							if flying ~= oldflying then
-								if flying then
-									if movingsound.IsPlaying then
-										movingsound:Stop()
-									end
-									if not flyingsound.IsPlaying then
-										flyingsound:Play()
-									end
-									if currenttween then
-										currenttween:Cancel()
-									end
-									tween = tweenService:Create(chairlegs, TweenInfo.new(0.15), {
-										Size = Vector3.zero
-									})
-									tween.Completed:Connect(function(state)
-										if state == Enum.PlaybackState.Completed then
-											chairfan.Transparency = 0
-											chairlegs.Transparency = 1
-											tween = tweenService:Create(chairfan, TweenInfo.new(0.15), {
-												Size = Vector3.new(1.534, 0.328, 1.537) / Vector3.new(791.138, 168.824, 792.027)
-											})
-											tween:Play()
-										end
-									end)
-									tween:Play()
-								else
-									if flyingsound.IsPlaying then
-										flyingsound:Stop()
-									end
-									if not movingsound.IsPlaying and moving then
-										movingsound:Play()
-									end
-									if currenttween then currenttween:Cancel() end
-									tween = tweenService:Create(chairfan, TweenInfo.new(0.15), {
-										Size = Vector3.zero
-									})
-									tween.Completed:Connect(function(state)
-										if state == Enum.PlaybackState.Completed then
-											chairfan.Transparency = 1
-											chairlegs.Transparency = 0
-											tween = tweenService:Create(chairlegs, TweenInfo.new(0.15), {
-												Size = Vector3.new(1.8, 1.2, 1.8) / Vector3.new(10.432, 8.105, 9.488)
-											})
-											tween:Play()
-										end
-									end)
-									tween:Play()
-								end
-								oldflying = flying
-							end
-						else
-							chair.Anchored = true
-							chairlegs.Anchored = true
-							chairfan.Anchored = true
-							repeat task.wait() until entitylib.isAlive and entitylib.character.Humanoid.Health > 0
-							chair.Anchored = false
-							chairlegs.Anchored = false
-							chairfan.Anchored = false
-							chairanim:Stop()
+						chairlegs.Velocity = Vector3.zero
+						chairlegs.CFrame = chair.CFrame * CFrame.new(0.047, -2.324, 0)
+						chairfan.Velocity = Vector3.zero
+						chairfan.CFrame = chair.CFrame * CFrame.new(0.047, -1.873, 0) * CFrame.Angles(0, math.rad(tick() * 180 % 360), math.rad(180))
+						local moving = entitylib.character.Humanoid:GetState() == Enum.HumanoidStateType.Running and entitylib.character.Humanoid.MoveDirection ~= Vector3.zero
+						local flying = vape.Modules.Fly and vape.Modules.Fly.Enabled or vape.Modules.LongJump and vape.Modules.LongJump.Enabled or vape.Modules.InfiniteFly and vape.Modules.InfiniteFly.Enabled
+						if movingsound.TimePosition > 1.9 then
+							movingsound.TimePosition = 0.2
 						end
-						task.wait()
-					until not GamingChair.Enabled
-				end)
-				if not suc then
-					pcall(function()
-						chair:Destroy()
-						errorNotification("GamingChair", "Your executor couldn't create the chair :(", 2)
-						GamingChair:Toggle()
-					end)
-				end
-			else
-				pcall(function()
-					if chairanim then
+						movingsound.PlaybackSpeed = (entitylib.character.RootPart.Velocity * Vector3.new(1, 0, 1)).Magnitude / 16
+						for _, v in trails do
+							v.Enabled = not flying and moving
+							v.Color = ColorSequence.new(movingsound.PlaybackSpeed > 1.5 and Color3.new(1, 0.5, 0) or Color3.new())
+						end
+						if moving ~= oldmoving then
+							if movingsound.IsPlaying then
+								if not moving then
+									movingsound:Stop()
+								end
+							else
+								if not flying and moving then
+									movingsound:Play()
+								end
+							end
+							oldmoving = moving
+						end
+						if flying ~= oldflying then
+							if flying then
+								if movingsound.IsPlaying then
+									movingsound:Stop()
+								end
+								if not flyingsound.IsPlaying then
+									flyingsound:Play()
+								end
+								if currenttween then
+									currenttween:Cancel()
+								end
+								tween = tweenService:Create(chairlegs, TweenInfo.new(0.15), {
+									Size = Vector3.zero
+								})
+								tween.Completed:Connect(function(state)
+									if state == Enum.PlaybackState.Completed then
+										chairfan.Transparency = 0
+										chairlegs.Transparency = 1
+										tween = tweenService:Create(chairfan, TweenInfo.new(0.15), {
+											Size = Vector3.new(1.534, 0.328, 1.537) / Vector3.new(791.138, 168.824, 792.027)
+										})
+										tween:Play()
+									end
+								end)
+								tween:Play()
+							else
+								if flyingsound.IsPlaying then
+									flyingsound:Stop()
+								end
+								if not movingsound.IsPlaying and moving then
+									movingsound:Play()
+								end
+								if currenttween then currenttween:Cancel() end
+								tween = tweenService:Create(chairfan, TweenInfo.new(0.15), {
+									Size = Vector3.zero
+								})
+								tween.Completed:Connect(function(state)
+									if state == Enum.PlaybackState.Completed then
+										chairfan.Transparency = 1
+										chairlegs.Transparency = 0
+										tween = tweenService:Create(chairlegs, TweenInfo.new(0.15), {
+											Size = Vector3.new(1.8, 1.2, 1.8) / Vector3.new(10.432, 8.105, 9.488)
+										})
+										tween:Play()
+									end
+								end)
+								tween:Play()
+							end
+							oldflying = flying
+						end
+					else
+						chair.Anchored = true
+						chairlegs.Anchored = true
+						chairfan.Anchored = true
+						repeat task.wait() until entitylib.isAlive and entitylib.character.Humanoid.Health > 0
+						chair.Anchored = false
+						chairlegs.Anchored = false
+						chairfan.Anchored = false
 						chairanim:Stop()
 					end
-					if chair then
-						chair:Destroy()
-					end
-				end)
+					task.wait()
+				until not GamingChair.Enabled
+			else
+				if chairanim then
+					chairanim:Stop()
+				end
 			end
 		end,
 		Tooltip = 'Sit in the best gaming chair known to mankind.'
@@ -5210,7 +4650,7 @@ run(function()
 			end
 	
 			Strings[ent] = ent.Player and whitelist:tag(ent.Player, true, true)..(DisplayName.Enabled and ent.Player.DisplayName or ent.Player.Name) or ent.Character.Name
-			
+	
 			if Health.Enabled then
 				local healthColor = Color3.fromHSV(math.clamp(ent.Health / ent.MaxHealth, 0, 1) / 2.5, 0.89, 0.75)
 				Strings[ent] = Strings[ent]..' <font color="rgb('..tostring(math.floor(healthColor.R * 255))..','..tostring(math.floor(healthColor.G * 255))..','..tostring(math.floor(healthColor.B * 255))..')">'..math.round(ent.Health)..'</font>'
@@ -5223,9 +4663,9 @@ run(function()
 			local nametag = Instance.new('TextLabel')
 			nametag.TextSize = 14 * Scale.Value
 			nametag.FontFace = FontOption.Value
-			local ize = getfontsize(removeTags(Strings[ent]), nametag.TextSize, nametag.FontFace, Vector2.new(100000, 100000))
+			local size = getfontsize(removeTags(Strings[ent]), nametag.TextSize, nametag.FontFace, Vector2.new(100000, 100000))
 			nametag.Name = ent.Player and ent.Player.Name or ent.Character.Name
-			nametag.Size = UDim2.fromOffset(ize.X + 8, ize.Y + 7)
+			nametag.Size = UDim2.fromOffset(size.X + 8, size.Y + 7)
 			nametag.AnchorPoint = Vector2.new(0.5, 1)
 			nametag.BackgroundColor3 = Color3.new()
 			nametag.BackgroundTransparency = Background.Value
@@ -5241,9 +4681,6 @@ run(function()
 			if not Targets.Players.Enabled and ent.Player then return end
 			if not Targets.NPCs.Enabled and ent.NPC then return end
 			if Teammates.Enabled and (not ent.Targetable) and (not ent.Friend) then return end
-			if vape.ThreadFix then
-				setthreadidentity(8)
-			end
 	
 			local nametag = {}
 			nametag.BG = Drawing.new('Square')
@@ -5256,7 +4693,7 @@ run(function()
 			nametag.Text.Font = 0
 			nametag.Text.ZIndex = 2
 			Strings[ent] = ent.Player and whitelist:tag(ent.Player, true)..(DisplayName.Enabled and ent.Player.DisplayName or ent.Player.Name) or ent.Character.Name
-			
+	
 			if Health.Enabled then
 				Strings[ent] = Strings[ent]..' '..math.round(ent.Health)
 			end
@@ -5294,10 +4731,10 @@ run(function()
 				Reference[ent] = nil
 				Strings[ent] = nil
 				Sizes[ent] = nil
-				for _, v2 in v do
+				for _, obj in v do
 					pcall(function()
-						v2.Visible = false
-						v2:Remove()
+						obj.Visible = false
+						obj:Remove()
 					end)
 				end
 			end
@@ -5313,7 +4750,7 @@ run(function()
 				end
 				Sizes[ent] = nil
 				Strings[ent] = ent.Player and whitelist:tag(ent.Player, true, true)..(DisplayName.Enabled and ent.Player.DisplayName or ent.Player.Name) or ent.Character.Name
-				
+	
 				if Health.Enabled then
 					local color = Color3.fromHSV(math.clamp(ent.Health / ent.MaxHealth, 0, 1) / 2.5, 0.89, 0.75)
 					Strings[ent] = Strings[ent]..' <font color="rgb('..tostring(math.floor(color.R * 255))..','..tostring(math.floor(color.G * 255))..','..tostring(math.floor(color.B * 255))..')">'..math.round(ent.Health)..'</font>'
@@ -5323,8 +4760,8 @@ run(function()
 					Strings[ent] = '<font color="rgb(85, 255, 85)">[</font><font color="rgb(255, 255, 255)">%s</font><font color="rgb(85, 255, 85)">]</font> '..Strings[ent]
 				end
 	
-				local ize = getfontsize(removeTags(Strings[ent]), nametag.TextSize, nametag.FontFace, Vector2.new(100000, 100000))
-				nametag.Size = UDim2.fromOffset(ize.X + 8, ize.Y + 7)
+				local size = getfontsize(removeTags(Strings[ent]), nametag.TextSize, nametag.FontFace, Vector2.new(100000, 100000))
+				nametag.Size = UDim2.fromOffset(size.X + 8, size.Y + 7)
 				nametag.Text = Strings[ent]
 			end
 		end,
@@ -5336,7 +4773,7 @@ run(function()
 				end
 				Sizes[ent] = nil
 				Strings[ent] = ent.Player and whitelist:tag(ent.Player, true)..(DisplayName.Enabled and ent.Player.DisplayName or ent.Player.Name) or ent.Character.Name
-				
+	
 				if Health.Enabled then
 					Strings[ent] = Strings[ent]..' '..math.round(ent.Health)
 				end
@@ -5386,8 +4823,8 @@ run(function()
 					continue
 				end
 	
-				if Distance.Enabled and entitylib.isAlive then
-					local mag = math.floor((entitylib.character.RootPart.Position - ent.RootPart.Position).Magnitude)
+				if Distance.Enabled then
+					local mag = entitylib.isAlive and math.floor((entitylib.character.RootPart.Position - ent.RootPart.Position).Magnitude) or 0
 					if Sizes[ent] ~= mag then
 						nametag.Text = string.format(Strings[ent], mag)
 						local ize = getfontsize(removeTags(nametag.Text), nametag.TextSize, nametag.FontFace, Vector2.new(100000, 100000))
@@ -5409,23 +4846,23 @@ run(function()
 					end
 				end
 	
-				local headPos, headVis = gameCamera:WorldToScreenPoint(ent.RootPart.Position + Vector3.new(0, ent.HipHeight + 1, 0))
+				local headPos, headVis = gameCamera:WorldToViewportPoint(ent.RootPart.Position + Vector3.new(0, ent.HipHeight + 1, 0))
 				nametag.Text.Visible = headVis
 				nametag.BG.Visible = headVis
 				if not headVis then
 					continue
 				end
 	
-				if Distance.Enabled and entitylib.isAlive then
-					local mag = math.floor((entitylib.character.RootPart.Position - ent.RootPart.Position).Magnitude)
+				if Distance.Enabled then
+					local mag = entitylib.isAlive and math.floor((entitylib.character.RootPart.Position - ent.RootPart.Position).Magnitude) or 0
 					if Sizes[ent] ~= mag then
 						nametag.Text.Text = string.format(Strings[ent], mag)
 						nametag.BG.Size = Vector2.new(nametag.Text.TextBounds.X + 8, nametag.Text.TextBounds.Y + 7)
 						Sizes[ent] = mag
 					end
 				end
-				nametag.BG.Position = Vector2.new(headPos.X - (nametag.BG.Size.X / 2), headPos.Y + (nametag.BG.Size.Y / 2))
-				nametag.Text.Position = nametag.BG.Position + Vector2.new(4, 2.5)
+				nametag.BG.Position = Vector2.new(headPos.X - (nametag.BG.Size.X / 2), headPos.Y - nametag.BG.Size.Y)
+				nametag.Text.Position = nametag.BG.Position + Vector2.new(4, 3)
 			end
 		end
 	}
@@ -5614,7 +5051,7 @@ run(function()
 		part.CanCollide = false
 		part.CanQuery = false
 		part.Massless = true
-		part.Parent = game.Workspace
+		part.Parent = workspace
 		local meshd = Instance.new('SpecialMesh')
 		meshd.MeshId = Mesh.Value
 		meshd.TextureId = Texture.Value
@@ -5732,20 +5169,20 @@ run(function()
 			setthreadidentity(8)
 		end
 	
-		local EntityDot = Instance.new('Frame')
-		EntityDot.Size = UDim2.fromOffset(4, 4)
-		EntityDot.AnchorPoint = Vector2.new(0.5, 0.5)
-		EntityDot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(PlayerColor.Hue, PlayerColor.Sat, PlayerColor.Value)
-		EntityDot.Parent = bkg
-		local EntityCorner = Instance.new('UICorner')
-		EntityCorner.CornerRadius = UDim.new(DotStyle.Value == 'Circles' and 1 or 0, 0)
-		EntityCorner.Parent = EntityDot
-		local EntityStroke = Instance.new('UIStroke')
-		EntityStroke.Color = Color3.new()
-		EntityStroke.Thickness = 1
-		EntityStroke.Transparency = 0.8
-		EntityStroke.Parent = EntityDot
-		Reference[ent] = EntityDot
+		local dot = Instance.new('Frame')
+		dot.Size = UDim2.fromOffset(4, 4)
+		dot.AnchorPoint = Vector2.new(0.5, 0.5)
+		dot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(PlayerColor.Hue, PlayerColor.Sat, PlayerColor.Value)
+		dot.Parent = bkg
+		local corner = Instance.new('UICorner')
+		corner.CornerRadius = UDim.new(DotStyle.Value == 'Circles' and 1 or 0, 0)
+		corner.Parent = dot
+		local stroke = Instance.new('UIStroke')
+		stroke.Color = Color3.new()
+		stroke.Thickness = 1
+		stroke.Transparency = 0.8
+		stroke.Parent = dot
+		Reference[ent] = dot
 	end
 	
 	local function Removed(ent)
@@ -5761,7 +5198,7 @@ run(function()
 	
 	Radar = vape:CreateOverlay({
 		Name = 'Radar',
-		Icon = getcustomasset('vape/assets/new/radaricon.png'),
+		Icon = getcustomasset('newvape/assets/new/radaricon.png'),
 		Size = UDim2.fromOffset(14, 14),
 		Position = UDim2.fromOffset(12, 13),
 		Function = function(callback)
@@ -5780,21 +5217,21 @@ run(function()
 					Added(ent)
 				end))
 				Radar:Clean(vape.Categories.Friends.ColorUpdate.Event:Connect(function()
-					for ent, EntityDot in Reference do
-						EntityDot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(PlayerColor.Hue, PlayerColor.Sat, PlayerColor.Value)
+					for ent, dot in Reference do
+						dot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(PlayerColor.Hue, PlayerColor.Sat, PlayerColor.Value)
 					end
 				end))
 				Radar:Clean(runService.RenderStepped:Connect(function()
-					for ent, EntityDot in Reference do
+					for ent, dot in Reference do
 						if entitylib.isAlive then
 							local dt = CFrame.lookAlong(entitylib.character.RootPart.Position, gameCamera.CFrame.LookVector * Vector3.new(1, 0, 1)):PointToObjectSpace(ent.RootPart.Position)
-							EntityDot.Position = UDim2.fromOffset(Clamp.Enabled and math.clamp(108 + dt.X, 2, 214) or 108 + dt.X, Clamp.Enabled and math.clamp(108 + dt.Z, 8, 214) or 108 + dt.Z)
+							dot.Position = UDim2.fromOffset(Clamp.Enabled and math.clamp(108 + dt.X, 2, 214) or 108 + dt.X, Clamp.Enabled and math.clamp(108 + dt.Z, 8, 214) or 108 + dt.Z)
 						end
 					end
 				end))
 			else
-				for ent in Reference do 
-					Removed(ent) 
+				for ent in Reference do
+					Removed(ent)
 				end
 			end
 		end
@@ -5820,8 +5257,8 @@ run(function()
 	PlayerColor = Radar:CreateColorSlider({
 		Name = 'Player Color',
 		Function = function(hue, sat, val)
-			for ent, EntityDot in Reference do
-				EntityDot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(hue, sat, val)
+			for ent, dot in Reference do
+				dot.BackgroundColor3 = entitylib.getEntityColor(ent) or Color3.fromHSV(hue, sat, val)
 			end
 		end
 	})
@@ -5917,15 +5354,15 @@ run(function()
 		Name = 'Search',
 		Function = function(callback)
 			if callback then
-				Search:Clean(game.Workspace.DescendantAdded:Connect(Add))
-				Search:Clean(game.Workspace.DescendantRemoving:Connect(function(v)
+				Search:Clean(workspace.DescendantAdded:Connect(Add))
+				Search:Clean(workspace.DescendantRemoving:Connect(function(v)
 					if Reference[v] then
 						Reference[v]:Destroy()
 						Reference[v] = nil
 					end
 				end))
 				
-				for _, v in game.Workspace:GetDescendants() do
+				for _, v in workspace:GetDescendants() do
 					Add(v)
 				end
 			else
@@ -5968,17 +5405,20 @@ end)
 run(function()
 	local SessionInfo
 	local FontOption
+	local Hide
 	local TextSize
 	local BorderColor
 	local Title
 	local TitleOffset = {}
+	local Custom
+	local CustomBox
 	local infoholder
 	local infolabel
 	local infostroke
 	
 	SessionInfo = vape:CreateOverlay({
 		Name = 'Session Info',
-		Icon = getcustomasset('vape/assets/new/textguiicon.png'),
+		Icon = getcustomasset('newvape/assets/new/textguiicon.png'),
 		Size = UDim2.fromOffset(16, 12),
 		Position = UDim2.fromOffset(12, 14),
 		Function = function(callback)
@@ -6005,9 +5445,27 @@ run(function()
 						if Title.Enabled then
 							stuff[1] = TitleOffset.Enabled and '<b>Session Info</b>\n<font size="4"> </font>' or '<b>Session Info</b>'
 						end
+	
 						for i, v in vape.Libraries.sessioninfo.Objects do
-							stuff[v.Index] = i..': '..v.Function(v.Value)
+							stuff[v.Index] = not table.find(Hide.ListEnabled, i) and i..': '..v.Function(v.Value) or false
 						end
+	
+						if #Hide.ListEnabled > 0 then
+							local key, val
+							repeat
+								local oldkey = key
+								key, val = next(stuff, key)
+								if val == false then
+									table.remove(stuff, key)
+									key = oldkey
+								end
+							until not key
+						end
+	
+						if Custom.Enabled then
+							table.insert(stuff, CustomBox.Value)
+						end
+	
 						if not Title.Enabled then
 							table.remove(stuff, 1)
 						end
@@ -6025,6 +5483,14 @@ run(function()
 	FontOption = SessionInfo:CreateFont({
 		Name = 'Font',
 		Blacklist = 'Arial'
+	})
+	Hide = SessionInfo:CreateTextList({
+		Name = 'Blacklist',
+		Tooltip = 'Name of entry to hide.',
+		Icon = getcustomasset('newvape/assets/new/blockedicon.png'),
+		Tab = getcustomasset('newvape/assets/new/blockedtab.png'),
+		TabSize = UDim2.fromOffset(21, 16),
+		Color = Color3.fromRGB(250, 50, 56)
 	})
 	SessionInfo:CreateColorSlider({
 		Name = 'Background Color',
@@ -6071,13 +5537,24 @@ run(function()
 			BorderColor.Object.Visible = callback
 		end
 	})
+	Custom = SessionInfo:CreateToggle({
+		Name = 'Add custom text',
+		Function = function(enabled)
+			CustomBox.Object.Visible = enabled
+		end
+	})
+	CustomBox = SessionInfo:CreateTextBox({
+		Name = 'Custom text',
+		Darker = true,
+		Visible = false
+	})
 	infoholder = Instance.new('Frame')
 	infoholder.BackgroundColor3 = Color3.new()
 	infoholder.BackgroundTransparency = 0.5
 	infoholder.Parent = SessionInfo.Children
 	vape:Clean(SessionInfo.Children:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
-		if vape.ThreadFix then 
-			setthreadidentity(8) 
+		if vape.ThreadFix then
+			setthreadidentity(8)
 		end
 		local newside = SessionInfo.Children.AbsolutePosition.X > (vape.gui.AbsoluteSize.X / 2)
 		infoholder.Position = UDim2.fromScale(newside and 1 or 0, 0)
@@ -6112,12 +5589,15 @@ run(function()
 			return {
 				Increment = function(_, val)
 					self.Objects[name].Value += (val or 1)
+				end,
+				Get = function()
+					return self.Objects[name].Value
 				end
 			}
 		end
 	}
-	vape.Libraries.sessioninfo:AddItem('Time Played', os.clock(), function(value) 
-		return os.date('!%X', math.floor(os.clock() - value)) 
+	vape.Libraries.sessioninfo:AddItem('Time Played', os.clock(), function(value)
+		return os.date('!%X', math.floor(os.clock() - value))
 	end)
 end)
 	
@@ -6471,9 +5951,9 @@ run(function()
 					return string.match(game:GetObjects('rbxassetid://'..IDBox.Value)[1].AnimationId, '%?id=(%d+)')
 				end)
 				animobject.AnimationId = 'rbxassetid://'..(suc and id or IDBox.Value)
-				
-				if entitylib.isAlive then 
-					playAnimation(entitylib.character) 
+	
+				if entitylib.isAlive then
+					playAnimation(entitylib.character)
 				end
 				AnimationPlayer:Clean(entitylib.Events.LocalAdded:Connect(playAnimation))
 				AnimationPlayer:Clean(animobject)
@@ -6532,6 +6012,7 @@ run(function()
 			if entitylib.isAlive then
 				entitylib.character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, not callback)
 			end
+	
 			if callback then
 				AntiRagdoll:Clean(entitylib.Events.LocalAdded:Connect(function(char)
 					char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
@@ -6568,74 +6049,72 @@ run(function()
 	})
 end)
 	
-if setfflag ~= nil and type(setfflag) == "function" then 
-	run(function()
-		local Blink
-		local Type
-		local AutoSend
-		local AutoSendLength
-		local oldphys, oldsend
-		
-		Blink = vape.Categories.Utility:CreateModule({
-			Name = 'Blink',
-			Function = function(callback)
-				if callback then
-					local teleported
-					Blink:Clean(lplr.OnTeleport:Connect(function()
-						setfflag('S2PhysicsSenderRate', '15')
-						setfflag('DataSenderRate', '60')
-						teleported = true
-					end))
-		
-					repeat
-						local physicsrate, senderrate = '0', Type.Value == 'All' and '-1' or '60'
-						if AutoSend.Enabled and tick() % (AutoSendLength.Value + 0.1) > AutoSendLength.Value then
-							physicsrate, senderrate = '15', '60'
-						end
-		
-						if physicsrate ~= oldphys or senderrate ~= oldsend then
-							setfflag('S2PhysicsSenderRate', physicsrate)
-							setfflag('DataSenderRate', senderrate)
-							oldphys, oldsend = physicsrate, oldsend
-						end
-						
-						task.wait(0.03)
-					until (not Blink.Enabled and not teleported)
-				else
-					if setfflag then
-						setfflag('S2PhysicsSenderRate', '15')
-						setfflag('DataSenderRate', '60')
+run(function()
+	local Blink
+	local Type
+	local AutoSend
+	local AutoSendLength
+	local oldphys, oldsend
+	
+	Blink = vape.Categories.Utility:CreateModule({
+		Name = 'Blink',
+		Function = function(callback)
+			if callback then
+				local teleported
+				Blink:Clean(lplr.OnTeleport:Connect(function()
+					setfflag('PhysicsSenderMaxBandwidthBps', '38760')
+					setfflag('DataSenderRate', '60')
+					teleported = true
+				end))
+	
+				repeat
+					local physicsrate, senderrate = '0', Type.Value == 'All' and '-1' or '60'
+					if AutoSend.Enabled and tick() % (AutoSendLength.Value + 0.1) > AutoSendLength.Value then
+						physicsrate, senderrate = '38760', '60'
 					end
-					oldphys, oldsend = nil, nil
+	
+					if physicsrate ~= oldphys or senderrate ~= oldsend then
+						setfflag('PhysicsSenderMaxBandwidthBps', physicsrate)
+						setfflag('DataSenderRate', senderrate)
+						oldphys, oldsend = physicsrate, senderrate
+					end
+	
+					task.wait(0.03)
+				until (not Blink.Enabled and not teleported)
+			else
+				if setfflag then
+					setfflag('PhysicsSenderMaxBandwidthBps', '38760')
+					setfflag('DataSenderRate', '60')
 				end
-			end,
-			Tooltip = 'Chokes packets until disabled.'
-		})
-		Type = Blink:CreateDropdown({
-			Name = 'Type',
-			List = {'Movement Only', 'All'},
-			Tooltip = 'Movement Only - Only chokes movement packets\nAll - Chokes remotes & movement'
-		})
-		AutoSend = Blink:CreateToggle({
-			Name = 'Auto send',
-			Function = function(callback)
-				AutoSendLength.Object.Visible = callback
-			end,
-			Tooltip = 'Automatically send packets in intervals'
-		})
-		AutoSendLength = Blink:CreateSlider({
-			Name = 'Send threshold',
-			Min = 0,
-			Max = 1,
-			Decimal = 100,
-			Darker = true,
-			Visible = false,
-			Suffix = function(val)
-				return val == 1 and 'second' or 'seconds'
+				oldphys, oldsend = nil, nil
 			end
-		})
-	end)
-end
+		end,
+		Tooltip = 'Chokes packets until disabled.'
+	})
+	Type = Blink:CreateDropdown({
+		Name = 'Type',
+		List = {'Movement Only', 'All'},
+		Tooltip = 'Movement Only - Only chokes movement packets\nAll - Chokes remotes & movement'
+	})
+	AutoSend = Blink:CreateToggle({
+		Name = 'Auto send',
+		Function = function(callback)
+			AutoSendLength.Object.Visible = callback
+		end,
+		Tooltip = 'Automatically send packets in intervals'
+	})
+	AutoSendLength = Blink:CreateSlider({
+		Name = 'Send threshold',
+		Min = 0,
+		Max = 1,
+		Decimal = 100,
+		Darker = true,
+		Visible = false,
+		Suffix = function(val)
+			return val == 1 and 'second' or 'seconds'
+		end
+	})
+end)
 	
 run(function()
 	local ChatSpammer
@@ -6722,31 +6201,29 @@ run(function()
 end)
 	
 run(function()
-	if getconnections and getconnections ~= nil and type(getconnections) == "function" and hookfunction and hookfunction ~= nil and type(hookfunction) == "function" then
-		local Disabler
+	local Disabler
 	
-		local function characterAdded(char)
-			for _, v in getconnections(char.RootPart:GetPropertyChangedSignal('CFrame')) do
-				hookfunction(v.Function, function() end)
-			end
-			for _, v in getconnections(char.RootPart:GetPropertyChangedSignal('Velocity')) do
-				hookfunction(v.Function, function() end)
-			end
+	local function characterAdded(char)
+		for _, v in getconnections(char.RootPart:GetPropertyChangedSignal('CFrame')) do
+			hookfunction(v.Function, function() end)
 		end
-		
-		Disabler = vape.Categories.Utility:CreateModule({
-			Name = 'Disabler',
-			Function = function(callback)
-				if callback then
-					Disabler:Clean(entitylib.Events.LocalAdded:Connect(characterAdded))
-					if entitylib.isAlive then
-						characterAdded(entitylib.character)
-					end
-				end
-			end,
-			Tooltip = 'Disables GetPropertyChangedSignal detections for movement'
-		})
+		for _, v in getconnections(char.RootPart:GetPropertyChangedSignal('Velocity')) do
+			hookfunction(v.Function, function() end)
+		end
 	end
+	
+	Disabler = vape.Categories.Utility:CreateModule({
+		Name = 'Disabler',
+		Function = function(callback)
+			if callback then
+				Disabler:Clean(entitylib.Events.LocalAdded:Connect(characterAdded))
+				if entitylib.isAlive then
+					characterAdded(entitylib.character)
+				end
+			end
+		end,
+		Tooltip = 'Disables GetPropertyChangedSignal detections for movement'
+	})
 end)
 	
 run(function()
@@ -6754,8 +6231,6 @@ run(function()
 		Name = 'Panic',
 		Function = function(callback)
 			if callback then
-				vape.Save = function() end
-				warningNotification("Profiles Saving", "Saving disabled due to Panic being enabled!", 3)
 				for _, v in vape.Modules do
 					if v.Enabled then
 						v:Toggle()
@@ -6848,18 +6323,18 @@ run(function()
 	end
 	
 	local function playerAdded(plr)
-		if not vape.Loaded then 
-			repeat task.wait() until vape.Loaded 
+		if not vape.Loaded then
+			repeat task.wait() until vape.Loaded
 		end
 	
-		local user = table.find(Users.List, tostring(plr.UserId))
+		local user = table.find(Users.ListEnabled, tostring(plr.UserId))
 		if user or getRole(plr, tonumber(Group.Value) or 0) >= (tonumber(Role.Value) or 1) then
 			notif('StaffDetector', 'Staff Detected ('..(user and 'blacklisted_user' or 'staff_role')..'): '..plr.Name, 60, 'alert')
 			whitelist.customtags[plr.Name] = {{text = 'GAME STAFF', color = Color3.new(1, 0, 0)}}
-			
+	
 			if Mode.Value == 'Uninject' then
-				task.spawn(function() 
-					vape:Uninject() 
+				task.spawn(function()
+					vape:Uninject()
 				end)
 				game:GetService('StarterGui'):SetCore('SendNotification', {
 					Title = 'StaffDetector',
@@ -6900,7 +6375,7 @@ run(function()
 								if begin then
 									local endof = str:find('/', begin + 1)
 									placeinfo = {Creator = {
-										CreatorType = 'Group', 
+										CreatorType = 'Group',
 										CreatorTargetId = str:sub(begin + 1, endof - 1)
 									}}
 								end
@@ -6917,11 +6392,11 @@ run(function()
 					Group:SetValue(placeinfo.Creator.CreatorTargetId)
 					Role:SetValue(getLowestStaffRole(groupinfo.Roles))
 				end
-				
-				if Group.Value == '' or Role.Value == '' then 
-					return 
+	
+				if Group.Value == '' or Role.Value == '' then
+					return
 				end
-				
+	
 				StaffDetector:Clean(playersService.PlayerAdded:Connect(playerAdded))
 				for _, v in playersService:GetPlayers() do
 					task.spawn(playerAdded, v)
@@ -6961,136 +6436,63 @@ end)
 	
 run(function()
 	local connections = {}
-	if getconnections ~= nil and type(getconnections) == "function" then
-		vape.Categories.World:CreateModule({
-			Name = 'Anti-AFK',
-			Function = function(callback)
-				if callback then
-					for _, v in getconnections(lplr.Idled) do
-						table.insert(connections, v)
-						v:Disable()
-					end
-				else
-					for _, v in connections do
-						v:Enable()
-					end
-					table.clear(connections)
+	
+	vape.Categories.World:CreateModule({
+		Name = 'Anti-AFK',
+		Function = function(callback)
+			if callback then
+				for _, v in getconnections(lplr.Idled) do
+					table.insert(connections, v)
+					v:Disable()
 				end
-			end,
-			Tooltip = 'Lets you stay ingame without getting kicked'
-		})
-	end
+			else
+				for _, v in connections do
+					v:Enable()
+				end
+				table.clear(connections)
+			end
+		end,
+		Tooltip = 'Lets you stay ingame without getting kicked'
+	})
 end)
 	
-if not shared.CheatEngineMode then
-	run(function()
-		local Freecam
-		local Value
-		local randomkey, module, old = httpService:GenerateGUID(false)
-		
-		Freecam = vape.Categories.World:CreateModule({
-			Name = 'Freecam',
-			Function = function(callback)
-				if callback then
-					repeat
-						task.wait(0.1)
-						for _, v in getconnections(gameCamera:GetPropertyChangedSignal('CameraType')) do
-							if v.Function then
-								module = debug.getupvalue(v.Function, 1)
-							end
-						end
-					until module or not Freecam.Enabled
-		
-					if module and module.activeCameraController and Freecam.Enabled then
-						old = module.activeCameraController.GetSubjectPosition
-						local camPos = old(module.activeCameraController) or Vector3.zero
-						module.activeCameraController.GetSubjectPosition = function()
-							return camPos
-						end
-		
-						Freecam:Clean(runService.PreSimulation:Connect(function(dt)
-							if not inputService:GetFocusedTextBox() then
-								local forward = (inputService:IsKeyDown(Enum.KeyCode.W) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0)
-								local side = (inputService:IsKeyDown(Enum.KeyCode.A) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0)
-								local up = (inputService:IsKeyDown(Enum.KeyCode.Q) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.E) and 1 or 0)
-								dt = dt * (inputService:IsKeyDown(Enum.KeyCode.LeftShift) and 0.25 or 1)
-								camPos = (CFrame.lookAlong(camPos, gameCamera.CFrame.LookVector) * CFrame.new(Vector3.new(side, up, forward) * (Value.Value * dt))).Position
-							end
-						end))
-		
-						contextService:BindActionAtPriority('FreecamKeyboard'..randomkey, function() 
-							return Enum.ContextActionResult.Sink 
-						end, false, Enum.ContextActionPriority.High.Value,
-							Enum.KeyCode.W,
-							Enum.KeyCode.A,
-							Enum.KeyCode.S,
-							Enum.KeyCode.D,
-							Enum.KeyCode.E,
-							Enum.KeyCode.Q,
-							Enum.KeyCode.Up,
-							Enum.KeyCode.Down
-						)
-					end
-				else
-					pcall(function()
-						contextService:UnbindAction('FreecamKeyboard'..randomkey)
-					end)
-					if module and old then
-						module.activeCameraController.GetSubjectPosition = old
-						module = nil
-						old = nil
-					end
-				end
-			end,
-			Tooltip = 'Lets you fly and clip through walls freely\nwithout moving your player server-sided.'
-		})
-		Value = Freecam:CreateSlider({
-			Name = 'Speed',
-			Min = 1,
-			Max = 150,
-			Default = 50,
-			Suffix = function(val)
-				return val == 1 and 'stud' or 'studs'
-			end
-		})
-	end)
-else
-	run(function()
-		local inputService = game:GetService('UserInputService')
-		local contextService = game:GetService('ContextActionService')
-		local gameCamera = game.Workspace.CurrentCamera or game.Workspace:FindFirstChildWhichIsA('Camera')
-		local Freecam
-		local Value
-		local randomkey = game:GetService("HttpService"):GenerateGUID(false)
-		local connection
-		local originalCameraState = {}
+run(function()
+	local Freecam
+	local Value
+	local randomkey, module, old = httpService:GenerateGUID(false)
 	
-		Freecam = vape.Categories.World:CreateModule({
-			Name = 'Freecam',
-			Function = function(callback)
-				if callback then
-					originalCameraState = {
-						CameraType = gameCamera.CameraType,
-						CameraSubject = gameCamera.CameraSubject
-					}
-					
-					gameCamera.CameraType = Enum.CameraType.Scriptable
-					local camPos = gameCamera.CFrame.Position
-					
-					connection = Freecam:Clean(runService.PreSimulation:Connect(function(dt)
+	Freecam = vape.Categories.World:CreateModule({
+		Name = 'Freecam',
+		Function = function(callback)
+			if callback then
+				repeat
+					task.wait(0.1)
+					for _, v in getconnections(gameCamera:GetPropertyChangedSignal('CameraType')) do
+						if v.Function then
+							module = debug.getupvalue(v.Function, 1)
+						end
+					end
+				until module or not Freecam.Enabled
+	
+				if module and module.activeCameraController and Freecam.Enabled then
+					old = module.activeCameraController.GetSubjectPosition
+					local camPos = old(module.activeCameraController) or Vector3.zero
+					module.activeCameraController.GetSubjectPosition = function()
+						return camPos
+					end
+	
+					Freecam:Clean(runService.PreSimulation:Connect(function(dt)
 						if not inputService:GetFocusedTextBox() then
 							local forward = (inputService:IsKeyDown(Enum.KeyCode.W) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.S) and 1 or 0)
 							local side = (inputService:IsKeyDown(Enum.KeyCode.A) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.D) and 1 or 0)
 							local up = (inputService:IsKeyDown(Enum.KeyCode.Q) and -1 or 0) + (inputService:IsKeyDown(Enum.KeyCode.E) and 1 or 0)
 							dt = dt * (inputService:IsKeyDown(Enum.KeyCode.LeftShift) and 0.25 or 1)
-							
 							camPos = (CFrame.lookAlong(camPos, gameCamera.CFrame.LookVector) * CFrame.new(Vector3.new(side, up, forward) * (Value.Value * dt))).Position
-							gameCamera.CFrame = CFrame.new(camPos) * CFrame.fromEulerAnglesYXZ(gameCamera.CFrame:ToEulerAnglesYXZ())
 						end
 					end))
 	
-					contextService:BindActionAtPriority('FreecamKeyboard'..randomkey, function() 
-						return Enum.ContextActionResult.Sink 
+					contextService:BindActionAtPriority('FreecamKeyboard'..randomkey, function()
+						return Enum.ContextActionResult.Sink
 					end, false, Enum.ContextActionPriority.High.Value,
 						Enum.KeyCode.W,
 						Enum.KeyCode.A,
@@ -7101,37 +6503,30 @@ else
 						Enum.KeyCode.Up,
 						Enum.KeyCode.Down
 					)
-				else
-					pcall(function()
-						contextService:UnbindAction('FreecamKeyboard'..randomkey)
-					end)
-					
-					if connection then
-						connection:Disconnect()
-						connection = nil
-					end
-					
-					if originalCameraState.CameraType then
-						gameCamera.CameraType = originalCameraState.CameraType
-						gameCamera.CameraSubject = originalCameraState.CameraSubject
-						originalCameraState = {}
-					end
 				end
-			end,
-			Tooltip = 'Lets you fly and clip through walls freely\nwithout moving your player server-sided.'
-		})
-	
-		Value = Freecam:CreateSlider({
-			Name = 'Speed',
-			Min = 1,
-			Max = 150,
-			Default = 50,
-			Suffix = function(val)
-				return val == 1 and 'stud' or 'studs'
+			else
+				pcall(function()
+					contextService:UnbindAction('FreecamKeyboard'..randomkey)
+				end)
+				if module and old then
+					module.activeCameraController.GetSubjectPosition = old
+					module = nil
+					old = nil
+				end
 			end
-		})
-	end)
-end
+		end,
+		Tooltip = 'Lets you fly and clip through walls freely\nwithout moving your player server-sided.'
+	})
+	Value = Freecam:CreateSlider({
+		Name = 'Speed',
+		Min = 1,
+		Max = 150,
+		Default = 50,
+		Suffix = function(val)
+			return val == 1 and 'stud' or 'studs'
+		end
+	})
+end)
 	
 run(function()
 	local Gravity
@@ -7144,25 +6539,30 @@ run(function()
 		Function = function(callback)
 			if callback then
 				if Mode.Value == 'Workspace' then
-					old = game.Workspace.Gravity
-					game.Workspace.Gravity = Value.Value
-					Gravity:Clean(game.Workspace:GetPropertyChangedSignal('Gravity'):Connect(function()
+					old = workspace.Gravity
+					workspace.Gravity = Value.Value
+					Gravity:Clean(workspace:GetPropertyChangedSignal('Gravity'):Connect(function()
 						if changed then return end
 						changed = true
-						old = game.Workspace.Gravity
-						game.Workspace.Gravity = Value.Value
+						old = workspace.Gravity
+						workspace.Gravity = Value.Value
 						changed = false
 					end))
 				else
 					Gravity:Clean(runService.PreSimulation:Connect(function(dt)
 						if entitylib.isAlive and entitylib.character.Humanoid.FloorMaterial == Enum.Material.Air then
-							entitylib.character.RootPart.AssemblyLinearVelocity += Vector3.new(0, dt * (game.Workspace.Gravity - Value.Value), 0)
+							local root = entitylib.character.RootPart
+							if Mode.Value == 'Impulse' then
+								root:ApplyImpulse(Vector3.new(0, dt * (workspace.Gravity - Value.Value), 0) * root.AssemblyMass)
+							else
+								root.AssemblyLinearVelocity += Vector3.new(0, dt * (workspace.Gravity - Value.Value), 0)
+							end
 						end
 					end))
 				end
 			else
 				if old then
-					game.Workspace.Gravity = old
+					workspace.Gravity = old
 					old = nil
 				end
 			end
@@ -7171,8 +6571,8 @@ run(function()
 	})
 	Mode = Gravity:CreateDropdown({
 		Name = 'Mode',
-		List = {'Workspace', 'Velocity'},
-		Tooltip = 'Workspace - Adjusts the gravity for the entire game\nVelocity - Adjusts the local players gravity'
+		List = {'Workspace', 'Velocity', 'Impulse'},
+		Tooltip = 'Workspace - Adjusts the gravity for the entire game\nVelocity - Adjusts the local players gravity\nImpulse - Same as velocity while using forces instead'
 	})
 	Value = Gravity:CreateSlider({
 		Name = 'Gravity',
@@ -7181,7 +6581,7 @@ run(function()
 		Function = function(val)
 			if Gravity.Enabled and Mode.Value == 'Workspace' then
 				changed = true
-				game.Workspace.Gravity = val
+				workspace.Gravity = val
 				changed = false
 			end
 		end,
@@ -7234,9 +6634,9 @@ run(function()
 						rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
 						local root = entitylib.character.RootPart
 						local movedir = root.Position + vec
-						local ray = game.Workspace:Raycast(movedir, Vector3.new(0, -15, 0), rayCheck)
+						local ray = workspace:Raycast(movedir, Vector3.new(0, -15, 0), rayCheck)
 						if not ray then
-							local check = game.Workspace:Blockcast(root.CFrame, Vector3.new(3, 1, 3), Vector3.new(0, -(entitylib.character.HipHeight + 1), 0), rayCheck)
+							local check = workspace:Blockcast(root.CFrame, Vector3.new(3, 1, 3), Vector3.new(0, -(entitylib.character.HipHeight + 1), 0), rayCheck)
 							if check then
 								vec = (check.Instance:GetClosestPointOnSurface(movedir) - root.Position) * Vector3.new(1, 0, 1)
 							end
@@ -7271,8 +6671,8 @@ run(function()
 		Name = 'Xray',
 		Function = function(callback)
 			if callback then
-				Xray:Clean(game.Workspace.DescendantAdded:Connect(modifyPart))
-				for _, v in game.Workspace:GetDescendants() do
+				Xray:Clean(workspace.DescendantAdded:Connect(modifyPart))
+				for _, v in workspace:GetDescendants() do
 					modifyPart(v)
 				end
 			else
@@ -7417,11 +6817,13 @@ run(function()
 	}
 	
 	local function removeObject(v)
-		if not table.find(newobjects, v) then 
+		if not table.find(newobjects, v) then
 			local toggle = Toggles[v.ClassName]
 			if toggle and toggle.Toggle.Enabled then
-				table.insert(oldobjects, v)
-				v.Parent = game
+				if v.Parent then
+					table.insert(oldobjects, v)
+					v.Parent = game
+				end
 			end
 		end
 	end
@@ -7718,10 +7120,7 @@ run(function()
 				hat.CanCollide = false
 				hat.CanQuery = false
 				hat.Massless = true
-				local suc, err = pcall(function()
-					hat.MeshId = 'http://www.roblox.com/asset/?id=1778999'
-				end)
-				if (not suc) then ChinaHat:Toggle(); errorNotification("ChinaHat", "MeshID failure (Executor issue). Disabling ChinaHat...", 3) end
+				hat.MeshId = 'http://www.roblox.com/asset/?id=1778999'
 				hat.Transparency = 1 - Color.Opacity
 				hat.Parent = gameCamera
 				hat.CFrame = entitylib.isAlive and entitylib.character.Head.CFrame + Vector3.new(0, 1, 0) or CFrame.identity
@@ -7849,86 +7248,17 @@ run(function()
 	end
 	
 	local function characterAdded(char)
-		local suc, err = pcall(function()
-			if Mode.Value == 'Character' then
-				task.wait(0.1)
-				char.Character.Archivable = true
-				local clone = char.Character:Clone()
-				repeat
-					if pcall(function()
-						desc = playersService:GetHumanoidDescriptionFromUserId(IDBox.Value == '' and 239702688 or tonumber(IDBox.Value))
-					end) then break end
-					task.wait(1)
-				until not Disguise.Enabled
-				if not Disguise.Enabled then
-					clone:ClearAllChildren()
-					clone:Destroy()
-					clone = nil
-					if desc then
-						desc:Destroy()
-						desc = nil
-					end
-					return
-				end
-				clone.Parent = game
-		
-				local originalDesc = char.Humanoid:WaitForChild('HumanoidDescription', 2) or {
-					HeightScale = 1,
-					SetEmotes = function() end,
-					SetEquippedEmotes = function() end
-				}
-				originalDesc.JumpAnimation = desc.JumpAnimation
-				desc.HeightScale = originalDesc.HeightScale
-		
-				for _, v in clone:GetChildren() do
-					if v:IsA('Accessory') or v:IsA('ShirtGraphic') or v:IsA('Shirt') or v:IsA('Pants') then
-						v:ClearAllChildren()
-						v:Destroy()
-					end
-				end
-		
-				clone.Humanoid:ApplyDescriptionClientServer(desc)
-				for _, v in char.Character:GetChildren() do
-					itemAdded(v)
-				end
-				Disguise:Clean(char.Character.ChildAdded:Connect(itemAdded))
-		
-				for _, v in clone:WaitForChild('Animate'):GetChildren() do
-					if not char.Character:FindFirstChild('Animate') then return end
-					local real = char.Character.Animate:FindFirstChild(v.Name)
-					if v and real then
-						local anim = v:FindFirstChildWhichIsA('Animation') or {AnimationId = ''}
-						local realanim = real:FindFirstChildWhichIsA('Animation') or {AnimationId = ''}
-						if realanim then
-							realanim.AnimationId = anim.AnimationId
-						end
-					end
-				end
-		
-				for _, v in clone:GetChildren() do
-					v:SetAttribute('Disguise', true)
-					if v:IsA('Accessory') then
-						for _, v2 in v:GetDescendants() do
-							if v2:IsA('Weld') and v2.Part1 then
-								v2.Part1 = char.Character[v2.Part1.Name]
-							end
-						end
-						v.Parent = char.Character
-					elseif v:IsA('ShirtGraphic') or v:IsA('Shirt') or v:IsA('Pants') or v:IsA('BodyColors') then
-						v.Parent = char.Character
-					elseif v.Name == 'Head' and char.Head:IsA('MeshPart') and (not char.Head:FindFirstChild('FaceControls')) then
-						char.Head.MeshId = v.MeshId
-					end
-				end
-		
-				local localface = char.Character:FindFirstChild('face', true)
-				local cloneface = clone:FindFirstChild('face', true)
-				if localface and cloneface then
-					itemAdded(localface, true)
-					cloneface.Parent = char.Head
-				end
-				originalDesc:SetEmotes(desc:GetEmotes())
-				originalDesc:SetEquippedEmotes(desc:GetEquippedEmotes())
+		if Mode.Value == 'Character' then
+			task.wait(0.1)
+			char.Character.Archivable = true
+			local clone = char.Character:Clone()
+			repeat
+				if pcall(function()
+					desc = playersService:GetHumanoidDescriptionFromUserId(IDBox.Value == '' and 239702688 or tonumber(IDBox.Value))
+				end) and desc then break end
+				task.wait(1)
+			until not Disguise.Enabled
+			if not Disguise.Enabled then
 				clone:ClearAllChildren()
 				clone:Destroy()
 				clone = nil
@@ -7936,42 +7266,104 @@ run(function()
 					desc:Destroy()
 					desc = nil
 				end
-			else
-				local data
-				repeat
-					if pcall(function()
-						data = marketplaceService:GetProductInfo(IDBox.Value == '' and 43 or tonumber(IDBox.Value), Enum.InfoType.Bundle)
-					end) then break end
-					task.wait(1)
-				until not Disguise.Enabled
-				if not Disguise.Enabled then
-					if data then
-						table.clear(data)
-						data = nil
-					end
-					return
-				end
-				if data.BundleType == 'AvatarAnimations' then
-					local animate = char.Character:FindFirstChild('Animate')
-					if not animate then return end
-					for _, v in desc.Items do
-						local animtype = v.Name:split(' ')[2]:lower()
-						if animtype ~= 'animation' then
-							local suc, res = pcall(function() return game:GetObjects('rbxassetid://'..v.Id) end)
-							if suc then
-								animate[animtype]:FindFirstChildWhichIsA('Animation').AnimationId = res[1]:FindFirstChildWhichIsA('Animation', true).AnimationId
-							end
-						end
-					end
-				else
-					notif('Disguise', 'that\'s not an animation pack', 5, 'warning')
+				return
+			end
+			clone.Parent = game
+	
+			local originalDesc = char.Humanoid:WaitForChild('HumanoidDescription', 2) or {
+				HeightScale = 1,
+				SetEmotes = function() end,
+				SetEquippedEmotes = function() end
+			}
+			originalDesc.JumpAnimation = desc.JumpAnimation
+			desc.HeightScale = originalDesc.HeightScale
+	
+			for _, v in clone:GetChildren() do
+				if v:IsA('Accessory') or v:IsA('ShirtGraphic') or v:IsA('Shirt') or v:IsA('Pants') then
+					v:ClearAllChildren()
+					v:Destroy()
 				end
 			end
-		end)
-		if (not suc) then
-			errorNotification("Disguise", "Something went wrong. Disabling Disguise...", 3)
-			warn("Voidware Error - Disguise | "..debug.traceback(err))
-			pcall(function() Disguise:Toggle() end)
+	
+			clone.Humanoid:ApplyDescriptionClientServer(desc)
+			for _, v in char.Character:GetChildren() do
+				itemAdded(v)
+			end
+			Disguise:Clean(char.Character.ChildAdded:Connect(itemAdded))
+	
+			for _, v in clone:WaitForChild('Animate'):GetChildren() do
+				if not char.Character:FindFirstChild('Animate') then return end
+				local real = char.Character.Animate:FindFirstChild(v.Name)
+				if v and real then
+					local anim = v:FindFirstChildWhichIsA('Animation') or {AnimationId = ''}
+					local realanim = real:FindFirstChildWhichIsA('Animation') or {AnimationId = ''}
+					if realanim then
+						realanim.AnimationId = anim.AnimationId
+					end
+				end
+			end
+	
+			for _, v in clone:GetChildren() do
+				v:SetAttribute('Disguise', true)
+				if v:IsA('Accessory') then
+					for _, v2 in v:GetDescendants() do
+						if v2:IsA('Weld') and v2.Part1 then
+							v2.Part1 = char.Character[v2.Part1.Name]
+						end
+					end
+					v.Parent = char.Character
+				elseif v:IsA('ShirtGraphic') or v:IsA('Shirt') or v:IsA('Pants') or v:IsA('BodyColors') then
+					v.Parent = char.Character
+				elseif v.Name == 'Head' and char.Head:IsA('MeshPart') and (not char.Head:FindFirstChild('FaceControls')) then
+					char.Head.MeshId = v.MeshId
+				end
+			end
+	
+			local localface = char.Character:FindFirstChild('face', true)
+			local cloneface = clone:FindFirstChild('face', true)
+			if localface and cloneface then
+				itemAdded(localface, true)
+				cloneface.Parent = char.Head
+			end
+			originalDesc:SetEmotes(desc:GetEmotes())
+			originalDesc:SetEquippedEmotes(desc:GetEquippedEmotes())
+			clone:ClearAllChildren()
+			clone:Destroy()
+			clone = nil
+			if desc then
+				desc:Destroy()
+				desc = nil
+			end
+		else
+			local data
+			repeat
+				if pcall(function()
+					data = marketplaceService:GetProductInfo(IDBox.Value == '' and 43 or tonumber(IDBox.Value), Enum.InfoType.Bundle)
+				end) then break end
+				task.wait(1)
+			until not Disguise.Enabled
+			if not Disguise.Enabled then
+				if data then
+					table.clear(data)
+					data = nil
+				end
+				return
+			end
+			if data.BundleType == 'AvatarAnimations' then
+				local animate = char.Character:FindFirstChild('Animate')
+				if not animate then return end
+				for _, v in desc.Items do
+					local animtype = v.Name:split(' ')[2]:lower()
+					if animtype ~= 'animation' then
+						local suc, res = pcall(function() return game:GetObjects('rbxassetid://'..v.Id) end)
+						if suc then
+							animate[animtype]:FindFirstChildWhichIsA('Animation').AnimationId = res[1]:FindFirstChildWhichIsA('Animation', true).AnimationId
+						end
+					end
+				end
+			else
+				notif('Disguise', 'that\'s not an animation pack', 5, 'warning')
+			end
 		end
 	end
 	
@@ -8380,7 +7772,7 @@ run(function()
 			if callback then
 				songobj = Instance.new('Sound')
 				songobj.Volume = Volume.Value / 100
-				songobj.Parent = game.Workspace
+				songobj.Parent = workspace
 				oldfov = gameCamera.FieldOfView
 	
 				repeat
@@ -8530,50 +7922,4 @@ run(function()
 	})
 	
 end)
-
-run(function()
-	local lightingsettings = {}
-	local lightingchanged = false
-	local Fullbright = {Enabled = false}
-	Fullbright = vape.Legit:CreateModule({
-		Name = "Fullbright",
-		Function = function(callback)
-			if callback then
-				lightingsettings.Brightness = lightingService.Brightness
-				lightingsettings.ClockTime = lightingService.ClockTime
-				lightingsettings.FogEnd = lightingService.FogEnd
-				lightingsettings.GlobalShadows = lightingService.GlobalShadows
-				lightingsettings.OutdoorAmbient = lightingService.OutdoorAmbient
-				lightingchanged = true
-				lightingService.Brightness = 2
-				lightingService.ClockTime = 14
-				lightingService.FogEnd = 100000
-				lightingService.GlobalShadows = false
-				lightingService.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-				lightingchanged = false
-				Fullbright:Clean(lightingService.Changed:Connect(function()
-					if not lightingchanged then
-						lightingsettings.Brightness = lightingService.Brightness
-						lightingsettings.ClockTime = lightingService.ClockTime
-						lightingsettings.FogEnd = lightingService.FogEnd
-						lightingsettings.GlobalShadows = lightingService.GlobalShadows
-						lightingsettings.OutdoorAmbient = lightingService.OutdoorAmbient
-						lightingchanged = true
-						lightingService.Brightness = 2
-						lightingService.ClockTime = 14
-						lightingService.FogEnd = 100000
-						lightingService.GlobalShadows = false
-						lightingService.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-						lightingchanged = false
-					end
-				end))
-				lightingsettings.Brightness = 3
-				lightingsettings.Ambient = Color3.fromRGB(255, 255, 255)
-			else
-				for name, val in pairs(lightingsettings) do
-					lightingService[name] = val
-				end
-			end
-		end
-	})
-end)
+	

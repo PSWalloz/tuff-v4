@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 local entitylib = {
 	isAlive = false,
 	character = {},
@@ -44,6 +45,13 @@ local playersService = cloneref(game:GetService('Players'))
 local inputService = cloneref(game:GetService('UserInputService'))
 local lplr = playersService.LocalPlayer
 local gameCamera = workspace.CurrentCamera
+
+local function getMousePosition()
+	if inputService.TouchEnabled then
+		return gameCamera.ViewportSize / 2
+	end
+	return inputService.GetMouseLocation(inputService)
+end
 
 local function loopClean(tbl)
 	for i, v in tbl do
@@ -118,7 +126,7 @@ end
 
 entitylib.EntityMouse = function(entitysettings)
 	if entitylib.isAlive then
-		local mouseLocation, sortingTable = inputService.GetMouseLocation(inputService), {}
+		local mouseLocation, sortingTable = entitysettings.MouseOrigin or getMousePosition(), {}
 		for _, v in entitylib.List do
 			if not entitysettings.Players and v.Player then continue end
 			if not entitysettings.NPCs and v.NPC then continue end
@@ -134,7 +142,7 @@ entitylib.EntityMouse = function(entitysettings)
 				})
 			end
 		end
-		
+
 		table.sort(sortingTable, entitysettings.Sort or function(a, b)
 			return a.Magnitude < b.Magnitude
 		end)
@@ -309,7 +317,7 @@ entitylib.removeEntity = function(char, localcheck)
 			task.cancel(entitylib.EntityThreads[char])
 			entitylib.EntityThreads[char] = nil
 		end
-		
+
 		local entity, ind = entitylib.getEntity(char)
 		if ind then
 			for _, v in entity.Connections do

@@ -1,7 +1,7 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 --[[
 	Prediction Library
 	Source: https://devforum.roblox.com/t/predict-projectile-ballistics-including-gravity-and-motion/1842434
-	Fixed: Raycast syntax
 ]]
 local module = {}
 local eps = 1e-9
@@ -192,16 +192,7 @@ function module.SolveTrajectory(origin, projectileSpeed, gravity, targetPos, tar
 	local p, q, r = targetVelocity.X, targetVelocity.Y, targetVelocity.Z
 	local h, j, k = disp.X, disp.Y, disp.Z
 	local l = -.5 * gravity
-
-	if playerJump ~= nil then
-		targetPos += Vector3.new(0, 2, 0)
-	end
-
-	--[[
-		Attempted gravity calculation for falling targets (disabled by default due to bugs; uncomment to enable).
-		FIXED: Corrected raycast syntax to workspace:Raycast(origin, direction, params).
-	]]
-	--[[
+	--attemped gravity calculation, may return to it in the future.
 	if math.abs(q) > 0.01 and playerGravity and playerGravity > 0 then
 		local estTime = (disp.Magnitude / projectileSpeed)
 		local origq = q
@@ -209,8 +200,7 @@ function module.SolveTrajectory(origin, projectileSpeed, gravity, targetPos, tar
 		for i = 1, 100 do
 			q -= (.5 * playerGravity) * estTime
 			local velo = targetVelocity * 0.016
-			local direction = Vector3.new(velo.X, (q * estTime) - playerHeight, velo.Z)
-			local ray = workspace:Raycast(targetPos, direction, params)
+			local ray = workspace.Raycast(workspace, Vector3.new(targetPos.X, targetPos.Y, targetPos.Z), Vector3.new(velo.X, (q * estTime) - playerHeight, velo.Z), params)
 			if ray then
 				local newTarget = ray.Position + Vector3.new(0, playerHeight, 0)
 				estTime -= math.sqrt(((targetPos - newTarget).Magnitude * 2) / playerGravity)
@@ -223,7 +213,6 @@ function module.SolveTrajectory(origin, projectileSpeed, gravity, targetPos, tar
 			end
 		end
 	end
-	--]]
 
 	local solutions = module.solveQuartic(
 		l*l,
@@ -232,44 +221,28 @@ function module.SolveTrajectory(origin, projectileSpeed, gravity, targetPos, tar
 		2*j*q + 2*h*p + 2*k*r,
 		j*j + h*h + k*k
 	)
-
-	local predictedPos
 	if solutions then
-		local posRoots = {}
-		for _, v in solutions do
+		local posRoots = table.create(2)
+		for _, v in solutions do --filter out the negative roots
 			if v > 0 then
 				table.insert(posRoots, v)
 			end
 		end
-		table.sort(posRoots)
-		if #posRoots > 0 then
+		posRoots[1] = posRoots[1]
+		if posRoots[1] then
 			local t = posRoots[1]
 			local d = (h + p*t)/t
 			local e = (j + q*t - l*t*t)/t
 			local f = (k + r*t)/t
-			predictedPos = origin + Vector3.new(d, e, f)
+			return origin + Vector3.new(d, e, f)
 		end
 	elseif gravity == 0 then
 		local t = (disp.Magnitude / projectileSpeed)
 		local d = (h + p*t)/t
 		local e = (j + q*t - l*t*t)/t
 		local f = (k + r*t)/t
-		predictedPos = origin + Vector3.new(d, e, f)
+		return origin + Vector3.new(d, e, f)
 	end
-
-	pcall(function()
-		setthreadidentity(8)
-	end)
-	local suc, ping = pcall(function()
-		return tonumber(game:GetService('Stats'):FindFirstChild('PerformanceStats').Ping:GetValue())
-	end)
-	if not suc then ping = 0 end
-	if predictedPos and targetVelocity ~= Vector3.zero and ping > 170 then
-		local leadTime = (ping / 1000) / 2
-		predictedPos += targetVelocity * leadTime
-	end
-
-	return predictedPos
 end
 
 return module
